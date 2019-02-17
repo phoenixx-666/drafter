@@ -15,23 +15,51 @@ using System.Windows.Forms;
 
 namespace drafter
 {
-	/// <summary>
-	/// Description of MainForm.
-	/// </summary>
 	public partial class MainForm : Form
 	{
 		bool locked = false;
+		Control[] teamAPicks, teamBPicks;
 		
 		public MainForm()
 		{
-			//
-			// The InitializeComponent() call is required for Windows Forms designer support.
-			//
 			InitializeComponent();
 			
-			//
-			// TODO: Add constructor code after the InitializeComponent() call.
-			//
+			teamAPicks = new Control[] {
+				c_t1b1,
+				c_t1b2,
+				c_t1b3,
+				c_t1h1,
+				c_t1h2,
+				c_t1h3,
+				c_t1h4,
+				c_t1h5,
+			};
+			teamBPicks = new Control[] {
+				c_t2b1,
+				c_t2b2,
+				c_t2b3,
+				c_t2h1,
+				c_t2h2,
+				c_t2h3,
+				c_t2h4,
+				c_t2h5,
+			};
+		}
+		
+		protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
+			if (keyData == (Keys.Control | Keys.Tab) && ActiveControl is ComboBox) {
+				for (int i = 0; i < teamAPicks.Length; i++) {
+					if (ActiveControl == teamAPicks[i]) {
+						teamBPicks[i].Focus();
+						break;
+					}
+					if (ActiveControl == teamBPicks[i]) {
+						teamAPicks[i].Focus();
+						break;
+					}
+				}
+			}
+			return base.ProcessCmdKey(ref msg, keyData);
 		}
 		
 		void MainFormLoad(object sender, EventArgs e)
