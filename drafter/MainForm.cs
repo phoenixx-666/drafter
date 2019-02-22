@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace drafter
@@ -19,11 +20,11 @@ namespace drafter
 	{
 		bool locked = false;
 		Control[] teamAPicks, teamBPicks;
-		
+
 		public MainForm()
 		{
 			InitializeComponent();
-			
+
 			teamAPicks = new Control[] {
 				c_t1b1,
 				c_t1b2,
@@ -45,23 +46,77 @@ namespace drafter
 				c_t2h5,
 			};
 		}
-		
+
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
-			if (keyData == (Keys.Control | Keys.Tab) && ActiveControl is ComboBox) {
-				for (int i = 0; i < teamAPicks.Length; i++) {
-					if (ActiveControl == teamAPicks[i]) {
-						teamBPicks[i].Focus();
-						break;
-					}
-					if (ActiveControl == teamBPicks[i]) {
-						teamAPicks[i].Focus();
-						break;
-					}
-				}
+			switch (keyData) {
+				case Keys.Control | Keys.Tab:
+					jumpBetweenTeams();
+					break;
+				case Keys.Control | Keys.C:
+					copy();
+					break;
+				case Keys.Control | Keys.Shift | Keys.C:
+					copy(true);
+					return true;
+				case Keys.Control | Keys.Shift | Keys.V:
+					paste();
+					return true;
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
-		
+
+		void jumpBetweenTeams() {
+			if (!(ActiveControl is ComboBox))
+				return;
+			for (int i = 0; i < teamAPicks.Length; i++) {
+				if (ActiveControl == teamAPicks[i]) {
+					teamBPicks[i].Focus();
+					break;
+				}
+				if (ActiveControl == teamBPicks[i]) {
+					teamAPicks[i].Focus();
+					break;
+				}
+			}
+		}
+
+		void copy(bool force = false) {
+			if (!force) {
+				if (ActiveControl is ComboBox && ((ComboBox)ActiveControl).SelectedText != "")
+					return;
+				else if (ActiveControl is TextBox && ((TextBox)ActiveControl).SelectedText != "")
+					return;
+			}
+			Clipboard.SetText(tResult.Text);
+		}
+
+		void paste() {
+			string text = Regex.Replace(Clipboard.GetText(), "\\s", "");
+			if (text.Length == 0)
+				return;
+
+			Dictionary<string, string> dict = new Dictionary<string, string>();
+			foreach (string chunk in text.Split('|')) {
+               	string[] keyval = chunk.Split('=');
+               	if (keyval.Length != 2)
+               		continue;
+               	string key = keyval[0], val = keyval[1];
+               	if (Regex.Match(key, "t[12](b[1-3]|h[1-5])").Success)
+               	    dict[key] = val; 
+            };
+
+			if (dict.Count == 0)
+				return;
+
+			locked = true;
+			foreach (ComboBox c in Controls.OfType<ComboBox>()) {
+				string key = c.Name.Substring(2);
+				c.Text = dict.ContainsKey(key) ? dict[key] : "";
+			}
+			locked = false;
+			update();
+		}
+
 		void MainFormLoad(object sender, EventArgs e)
 		{
 			string[] heroes = new[] {
@@ -160,17 +215,16 @@ namespace drafter
 			}
 			update();
 		}
-		
+
 		void cboxChange(object sender, EventArgs e) {
 			if (locked)
 				return;
 
 			update();
 		}
-		
+
 		void update() {
-			
-			
+
 			string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
 				"|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
 			tResult.Text = string.Format(template,
@@ -179,13 +233,13 @@ namespace drafter
 			                             c_t2h1.Text, c_t2h2.Text, c_t2h3.Text, c_t2h4.Text, c_t2h5.Text,
 			                             c_t2b1.Text, c_t2b2.Text, c_t2b3.Text);
 		}
-		
+
 		void swap(ComboBox a, ComboBox b) {
 			string temp = a.Text;
 			a.Text = b.Text;
 			b.Text = temp;
 		}
-		
+
 		void BSwapClick(object sender, EventArgs e)
 		{
 			locked = true;
@@ -200,10 +254,10 @@ namespace drafter
 			locked = false;
 			update();
 		}
-		
+
 		void BCopyClick(object sender, EventArgs e)
 		{
-			Clipboard.SetText(tResult.Text);
+			copy(true);
 		}
 
 		void BClearClick(object sender, EventArgs e)
@@ -216,7 +270,7 @@ namespace drafter
 			update();
 			c_t1b1.Focus();
 		}
-		
+
 		void TResultGotFocus(object sender, EventArgs e)
 		{
 			tResult.SelectAll();
