@@ -10,7 +10,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -121,93 +123,13 @@ namespace drafter
 
 		void MainFormLoad(object sender, EventArgs e)
 		{
-			string[] heroes = new[] {
-				"abathur",
-				"alarak",
-				"alexstrasza",
-				"ana",
-				"anubarak",
-				"artanis",
-				"arthas",
-				"auriel",
-				"azmodan",
-				"blaze",
-				"brightwing",
-				"butcher",
-				"cassia",
-				"chen",
-				"cho",
-				"chromie",
-				"deckard",
-				"dehaka",
-				"diablo",
-				"dva",
-				"etc",
-				"falstad",
-				"fenix",
-				"gall",
-				"garrosh",
-				"gazlowe",
-				"genji",
-				"greymane",
-				"guldan",
-				"hanzo",
-				"illidan",
-				"imperius",
-				"jaina",
-				"johanna",
-				"junkrat",
-				"kaelthas",
-				"kelthuzad",
-				"kerrigan",
-				"kharazim",
-				"leoric",
-				"lili",
-				"liming",
-				"lucio",
-				"lunara",
-				"maiev",
-				"malfurion",
-				"malganis",
-				"malthael",
-				"medivh",
-				"mephisto",
-				"morales",
-				"muradin",
-				"murky",
-				"nazeebo",
-				"nova",
-				"orphea",
-				"probius",
-				"ragnaros",
-				"raynor",
-				"rehgar",
-				"rexxar",
-				"samuro",
-				"sgt",
-				"sonya",
-				"stitches",
-				"stukov",
-				"sylvanas",
-				"tassadar",
-				"thrall",
-				"tlv",
-				"tracer",
-				"tychus",
-				"tyrael",
-				"tyrande",
-				"uther",
-				"valeera",
-				"valla",
-				"varian",
-				"whitemane",
-				"xul",
-				"yrel",
-				"zagara",
-				"zarya",
-				"zeratul",
-				"zuljin",
-			};
+			string herolistfile = "herolist";
+			if (!File.Exists(herolistfile)) {
+				herolistfile = "herolist.default";
+			}
+			string[] heroes = File.ReadAllLines(herolistfile, Encoding.UTF8).Select(s => {
+            	return (string)Regex.Replace(s, "\\s", "");
+            }).Where(s => s != "").ToArray();
 
 			foreach (ComboBox c in Controls.OfType<ComboBox>()) {
 				foreach (string heroname in heroes) {
