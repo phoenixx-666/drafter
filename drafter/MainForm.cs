@@ -51,9 +51,10 @@ namespace drafter
 			switch (keyData) {
 				case Keys.Control | Keys.Tab:
 					jumpBetweenTeams();
-					break;
+					return true;
 				case Keys.Control | Keys.C:
-					copy();
+					if (copy())
+						return true;
 					break;
 				case Keys.Control | Keys.Shift | Keys.C:
 					copy(true);
@@ -80,14 +81,15 @@ namespace drafter
 			}
 		}
 
-		void copy(bool force = false) {
+		bool copy(bool force = false) {
 			if (!force) {
 				if (ActiveControl is ComboBox && ((ComboBox)ActiveControl).SelectedText != "")
-					return;
+					return false;
 				else if (ActiveControl is TextBox && ((TextBox)ActiveControl).SelectedText != "")
-					return;
+					return false;
 			}
 			Clipboard.SetText(tResult.Text);
+			return true;
 		}
 
 		void paste() {
