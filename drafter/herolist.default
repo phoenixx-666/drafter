@@ -1,3 +1,7 @@
+# if you need a custom hero list, create a file called "herolist"
+# (with no extension) in the app directory. If exists, that file
+# will be used instead as the source for the hero list.
+
 abathur
 alarak
 alexstrasza

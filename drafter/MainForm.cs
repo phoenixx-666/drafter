@@ -128,6 +128,7 @@ namespace drafter
 				herolistfile = "herolist.default";
 			}
 			string[] heroes = File.ReadAllLines(herolistfile, Encoding.UTF8).Select(s => {
+            	s = (string)Regex.Replace(s, "#.*$", "");
             	return (string)Regex.Replace(s, "\\s", "");
             }).Where(s => s != "").ToArray();
 
