@@ -72,6 +72,11 @@ namespace drafter
 			this.bSwap = new System.Windows.Forms.Button();
 			this.bCopy = new System.Windows.Forms.Button();
 			this.bClear = new System.Windows.Forms.Button();
+			this.gbTabOrder = new System.Windows.Forms.GroupBox();
+			this.rbFPRight = new System.Windows.Forms.RadioButton();
+			this.rbFPLeft = new System.Windows.Forms.RadioButton();
+			this.rbSimple = new System.Windows.Forms.RadioButton();
+			this.gbTabOrder.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// c_t1b1
@@ -83,7 +88,7 @@ namespace drafter
 			this.c_t1b1.Name = "c_t1b1";
 			this.c_t1b1.Size = new System.Drawing.Size(80, 21);
 			this.c_t1b1.Sorted = true;
-			this.c_t1b1.TabIndex = 0;
+			this.c_t1b1.TabIndex = 100;
 			// 
 			// c_t1b2
 			// 
@@ -94,7 +99,7 @@ namespace drafter
 			this.c_t1b2.Name = "c_t1b2";
 			this.c_t1b2.Size = new System.Drawing.Size(80, 21);
 			this.c_t1b2.Sorted = true;
-			this.c_t1b2.TabIndex = 1;
+			this.c_t1b2.TabIndex = 101;
 			// 
 			// c_t1b3
 			// 
@@ -105,7 +110,7 @@ namespace drafter
 			this.c_t1b3.Name = "c_t1b3";
 			this.c_t1b3.Size = new System.Drawing.Size(80, 21);
 			this.c_t1b3.Sorted = true;
-			this.c_t1b3.TabIndex = 2;
+			this.c_t1b3.TabIndex = 102;
 			// 
 			// c_t2b3
 			// 
@@ -116,7 +121,7 @@ namespace drafter
 			this.c_t2b3.Name = "c_t2b3";
 			this.c_t2b3.Size = new System.Drawing.Size(80, 21);
 			this.c_t2b3.Sorted = true;
-			this.c_t2b3.TabIndex = 10;
+			this.c_t2b3.TabIndex = 110;
 			// 
 			// c_t2b2
 			// 
@@ -127,7 +132,7 @@ namespace drafter
 			this.c_t2b2.Name = "c_t2b2";
 			this.c_t2b2.Size = new System.Drawing.Size(80, 21);
 			this.c_t2b2.Sorted = true;
-			this.c_t2b2.TabIndex = 9;
+			this.c_t2b2.TabIndex = 109;
 			// 
 			// c_t2b1
 			// 
@@ -138,7 +143,7 @@ namespace drafter
 			this.c_t2b1.Name = "c_t2b1";
 			this.c_t2b1.Size = new System.Drawing.Size(80, 21);
 			this.c_t2b1.Sorted = true;
-			this.c_t2b1.TabIndex = 8;
+			this.c_t2b1.TabIndex = 108;
 			// 
 			// l_t1b1
 			// 
@@ -197,7 +202,7 @@ namespace drafter
 			this.c_t1h1.Name = "c_t1h1";
 			this.c_t1h1.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h1.Sorted = true;
-			this.c_t1h1.TabIndex = 3;
+			this.c_t1h1.TabIndex = 103;
 			// 
 			// l_t1h1
 			// 
@@ -224,7 +229,7 @@ namespace drafter
 			this.c_t1h2.Name = "c_t1h2";
 			this.c_t1h2.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h2.Sorted = true;
-			this.c_t1h2.TabIndex = 4;
+			this.c_t1h2.TabIndex = 104;
 			// 
 			// l_t1h3
 			// 
@@ -243,7 +248,7 @@ namespace drafter
 			this.c_t1h3.Name = "c_t1h3";
 			this.c_t1h3.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h3.Sorted = true;
-			this.c_t1h3.TabIndex = 5;
+			this.c_t1h3.TabIndex = 105;
 			// 
 			// l_t1h4
 			// 
@@ -262,7 +267,7 @@ namespace drafter
 			this.c_t1h4.Name = "c_t1h4";
 			this.c_t1h4.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h4.Sorted = true;
-			this.c_t1h4.TabIndex = 6;
+			this.c_t1h4.TabIndex = 106;
 			// 
 			// l_t1h5
 			// 
@@ -281,7 +286,7 @@ namespace drafter
 			this.c_t1h5.Name = "c_t1h5";
 			this.c_t1h5.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h5.Sorted = true;
-			this.c_t1h5.TabIndex = 7;
+			this.c_t1h5.TabIndex = 107;
 			// 
 			// c_t2h1
 			// 
@@ -292,7 +297,7 @@ namespace drafter
 			this.c_t2h1.Name = "c_t2h1";
 			this.c_t2h1.Size = new System.Drawing.Size(120, 21);
 			this.c_t2h1.Sorted = true;
-			this.c_t2h1.TabIndex = 11;
+			this.c_t2h1.TabIndex = 111;
 			// 
 			// l_t2h1
 			// 
@@ -311,7 +316,7 @@ namespace drafter
 			this.c_t2h2.Name = "c_t2h2";
 			this.c_t2h2.Size = new System.Drawing.Size(120, 21);
 			this.c_t2h2.Sorted = true;
-			this.c_t2h2.TabIndex = 12;
+			this.c_t2h2.TabIndex = 112;
 			// 
 			// l_t2h2
 			// 
@@ -330,7 +335,7 @@ namespace drafter
 			this.c_t2h3.Name = "c_t2h3";
 			this.c_t2h3.Size = new System.Drawing.Size(120, 21);
 			this.c_t2h3.Sorted = true;
-			this.c_t2h3.TabIndex = 13;
+			this.c_t2h3.TabIndex = 113;
 			// 
 			// l_t2h3
 			// 
@@ -349,7 +354,7 @@ namespace drafter
 			this.c_t2h4.Name = "c_t2h4";
 			this.c_t2h4.Size = new System.Drawing.Size(120, 21);
 			this.c_t2h4.Sorted = true;
-			this.c_t2h4.TabIndex = 14;
+			this.c_t2h4.TabIndex = 114;
 			// 
 			// l_t2h4
 			// 
@@ -368,7 +373,7 @@ namespace drafter
 			this.c_t2h5.Name = "c_t2h5";
 			this.c_t2h5.Size = new System.Drawing.Size(120, 21);
 			this.c_t2h5.Sorted = true;
-			this.c_t2h5.TabIndex = 15;
+			this.c_t2h5.TabIndex = 115;
 			// 
 			// l_t2h5
 			// 
@@ -395,7 +400,7 @@ namespace drafter
 			this.bSwap.Location = new System.Drawing.Point(224, 120);
 			this.bSwap.Name = "bSwap";
 			this.bSwap.Size = new System.Drawing.Size(104, 32);
-			this.bSwap.TabIndex = 18;
+			this.bSwap.TabIndex = 202;
 			this.bSwap.Text = "< Swap Teams >";
 			this.bSwap.UseVisualStyleBackColor = true;
 			this.bSwap.Click += new System.EventHandler(this.BSwapClick);
@@ -405,7 +410,7 @@ namespace drafter
 			this.bCopy.Location = new System.Drawing.Point(8, 288);
 			this.bCopy.Name = "bCopy";
 			this.bCopy.Size = new System.Drawing.Size(104, 32);
-			this.bCopy.TabIndex = 16;
+			this.bCopy.TabIndex = 200;
 			this.bCopy.Text = "Copy";
 			this.bCopy.UseVisualStyleBackColor = true;
 			this.bCopy.Click += new System.EventHandler(this.BCopyClick);
@@ -415,16 +420,61 @@ namespace drafter
 			this.bClear.Location = new System.Drawing.Point(456, 288);
 			this.bClear.Name = "bClear";
 			this.bClear.Size = new System.Drawing.Size(104, 32);
-			this.bClear.TabIndex = 17;
+			this.bClear.TabIndex = 201;
 			this.bClear.Text = "Clear";
 			this.bClear.UseVisualStyleBackColor = true;
 			this.bClear.Click += new System.EventHandler(this.BClearClick);
+			// 
+			// gbTabOrder
+			// 
+			this.gbTabOrder.Controls.Add(this.rbFPRight);
+			this.gbTabOrder.Controls.Add(this.rbFPLeft);
+			this.gbTabOrder.Controls.Add(this.rbSimple);
+			this.gbTabOrder.Location = new System.Drawing.Point(120, 284);
+			this.gbTabOrder.Name = "gbTabOrder";
+			this.gbTabOrder.Size = new System.Drawing.Size(328, 40);
+			this.gbTabOrder.TabIndex = 21;
+			this.gbTabOrder.TabStop = false;
+			this.gbTabOrder.Text = "Tab Order";
+			// 
+			// rbFPRight
+			// 
+			this.rbFPRight.Location = new System.Drawing.Point(216, 14);
+			this.rbFPRight.Name = "rbFPRight";
+			this.rbFPRight.Size = new System.Drawing.Size(104, 20);
+			this.rbFPRight.TabIndex = 302;
+			this.rbFPRight.Text = "First Pick Right";
+			this.rbFPRight.UseVisualStyleBackColor = true;
+			this.rbFPRight.CheckedChanged += new System.EventHandler(this.RadioButtonCheckedChanged);
+			// 
+			// rbFPLeft
+			// 
+			this.rbFPLeft.Location = new System.Drawing.Point(112, 14);
+			this.rbFPLeft.Name = "rbFPLeft";
+			this.rbFPLeft.Size = new System.Drawing.Size(104, 20);
+			this.rbFPLeft.TabIndex = 301;
+			this.rbFPLeft.Text = "First Pick Left";
+			this.rbFPLeft.UseVisualStyleBackColor = true;
+			this.rbFPLeft.CheckedChanged += new System.EventHandler(this.RadioButtonCheckedChanged);
+			// 
+			// rbSimple
+			// 
+			this.rbSimple.Checked = true;
+			this.rbSimple.Location = new System.Drawing.Point(8, 14);
+			this.rbSimple.Name = "rbSimple";
+			this.rbSimple.Size = new System.Drawing.Size(104, 20);
+			this.rbSimple.TabIndex = 300;
+			this.rbSimple.TabStop = true;
+			this.rbSimple.Text = "Simple";
+			this.rbSimple.UseVisualStyleBackColor = true;
+			this.rbSimple.CheckedChanged += new System.EventHandler(this.RadioButtonCheckedChanged);
 			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(569, 329);
+			this.Controls.Add(this.gbTabOrder);
 			this.Controls.Add(this.bClear);
 			this.Controls.Add(this.bCopy);
 			this.Controls.Add(this.bSwap);
@@ -464,9 +514,14 @@ namespace drafter
 			this.Name = "MainForm";
 			this.Text = "drafter";
 			this.Load += new System.EventHandler(this.MainFormLoad);
+			this.gbTabOrder.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.RadioButton rbFPLeft;
+		private System.Windows.Forms.RadioButton rbFPRight;
+		private System.Windows.Forms.RadioButton rbSimple;
+		private System.Windows.Forms.GroupBox gbTabOrder;
 		private System.Windows.Forms.Button bClear;
 		private System.Windows.Forms.Button bCopy;
 		private System.Windows.Forms.Button bSwap;

@@ -22,6 +22,10 @@ namespace drafter
 	{
 		bool locked = false;
 		Control[] teamAPicks, teamBPicks;
+		Dictionary<ComboBox, int> indicesSimple, indicesFPLeft, indicesFPRight;
+		Dictionary<object, Dictionary<ComboBox, int>> indexDicts;
+		Dictionary<object, ComboBox> initialCBoxes;
+		ComboBox initialCBox;
 
 		public MainForm()
 		{
@@ -47,6 +51,94 @@ namespace drafter
 				c_t2h4,
 				c_t2h5,
 			};
+
+			indicesSimple = new Dictionary<ComboBox, int>() {
+				// Left Team Bans
+				{c_t1b1, 1},
+				{c_t1b2, 2},
+				{c_t1b3, 3},
+				// Left Team Picks
+				{c_t1h1, 4},
+				{c_t1h2, 5},
+				{c_t1h3, 6},
+				{c_t1h4, 7},
+				{c_t1h5, 8},
+				// Right Team Bans
+				{c_t2b1, 9},
+				{c_t2b2, 10},
+				{c_t2b3, 11},
+				// Right Team Picks
+				{c_t2h1, 12},
+				{c_t2h2, 13},
+				{c_t2h3, 14},
+				{c_t2h4, 15},
+				{c_t2h5, 16}
+			};
+			indicesFPLeft = new Dictionary<ComboBox, int>() {
+				// First Bans
+				{c_t1b1, 1},
+				{c_t2b1, 2},
+				// Second Bans
+				{c_t1b2, 3},
+				{c_t2b2, 4},
+				// First Pick
+				{c_t1h1, 5},
+				// Second Picks
+				{c_t2h1, 6},
+				{c_t2h2, 7},
+				// Third Picks
+				{c_t1h2, 8},
+				{c_t1h3, 9},
+				// Third Bans
+				{c_t2b3, 10},
+				{c_t1b3, 11},
+				// Fourth Picks
+				{c_t2h3, 12},
+				{c_t2h4, 13},
+				// Fifth Picks
+				{c_t1h4, 14},
+				{c_t1h5, 15},
+				// Last Pick
+				{c_t2h5, 16}
+			};
+			indicesFPRight = new Dictionary<ComboBox, int>() {
+				// First Bans
+				{c_t2b1, 1},
+				{c_t1b1, 2},
+				// Second Bans
+				{c_t2b2, 3},
+				{c_t1b2, 4},
+				// First Pick
+				{c_t2h1, 5},
+				// Second Picks
+				{c_t1h1, 6},
+				{c_t1h2, 7},
+				// Third Picks
+				{c_t2h2, 8},
+				{c_t2h3, 9},
+				// Third Bans
+				{c_t1b3, 10},
+				{c_t2b3, 11},
+				// Fourth Picks
+				{c_t1h3, 12},
+				{c_t1h4, 13},
+				// Fifth Picks
+				{c_t2h4, 14},
+				{c_t2h5, 15},
+				// Last Pick
+				{c_t1h5, 16}
+			};
+			indexDicts = new Dictionary<object, Dictionary<ComboBox, int>>() {
+				{rbSimple, indicesSimple},
+				{rbFPLeft, indicesFPLeft},
+				{rbFPRight, indicesFPRight}
+			};
+			initialCBoxes = new Dictionary<object, ComboBox>() {
+				{rbSimple, c_t1b1},
+				{rbFPLeft, c_t1b1},
+				{rbFPRight, c_t2b1}
+			};
+			initialCBox = c_t1b1;
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
@@ -193,12 +285,24 @@ namespace drafter
 			}
 			locked = false;
 			update();
-			c_t1b1.Focus();
+			initialCBox.Focus();
 		}
 
 		void TResultGotFocus(object sender, EventArgs e)
 		{
 			tResult.SelectAll();
+		}
+
+		void RadioButtonCheckedChanged(object sender, EventArgs e)
+		{
+			RadioButton radioButton = sender as RadioButton;
+			if (radioButton == null || !radioButton.Checked)
+				return;
+			foreach (KeyValuePair<ComboBox, int> kvp in indexDicts[sender]) {
+				kvp.Key.TabIndex = 100 + kvp.Value;
+			}
+			initialCBox = initialCBoxes[sender];
+			initialCBox.Focus();
 		}
 	}
 }
