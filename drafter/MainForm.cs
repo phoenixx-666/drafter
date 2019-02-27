@@ -215,9 +215,9 @@ namespace drafter
 
 		void MainFormLoad(object sender, EventArgs e)
 		{
-			string herolistfile = "herolist";
+			string herolistfile = Path.Combine(Application.StartupPath, "herolist");
 			if (!File.Exists(herolistfile)) {
-				herolistfile = "herolist.default";
+				herolistfile = Path.Combine(Application.StartupPath, "herolist.default");
 			}
 			string[] heroes = File.ReadAllLines(herolistfile, Encoding.UTF8).Select(s => {
             	s = (string)Regex.Replace(s, "#.*$", "");
