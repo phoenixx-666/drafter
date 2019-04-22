@@ -26,6 +26,7 @@ namespace drafter
 		Dictionary<object, Dictionary<ComboBox, int>> indexDicts;
 		Dictionary<object, ComboBox> initialCBoxes;
 		ComboBox initialCBox;
+		Regex cleanRe = null, parserRe = null;
 
 		public MainForm()
 		{
@@ -187,17 +188,23 @@ namespace drafter
 		}
 
 		void paste() {
-			string text = Regex.Replace(Clipboard.GetText(), "\\s", "");
+			if (cleanRe == null)
+				cleanRe = new Regex("\\s+");
+
+			string text = cleanRe.Replace(Clipboard.GetText(), " ");
 			if (text.Length == 0)
 				return;
+
+			if (parserRe == null)
+				parserRe = new Regex("t[12](b[1-3]|h[1-5])");
 
 			Dictionary<string, string> dict = new Dictionary<string, string>();
 			foreach (string chunk in text.Split('|')) {
                	string[] keyval = chunk.Split('=');
                	if (keyval.Length != 2)
                		continue;
-               	string key = keyval[0], val = keyval[1];
-               	if (Regex.Match(key, "t[12](b[1-3]|h[1-5])").Success)
+               	string key = keyval[0].Trim(), val = keyval[1].Trim();
+               	if (parserRe.Match(key).Success)
                	    dict[key] = val; 
             };
 
