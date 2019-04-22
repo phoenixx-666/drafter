@@ -57,16 +57,16 @@ namespace drafter
 				{c_t1b1, 1},
 				{c_t1b2, 2},
 				{c_t1b3, 3},
-				// Left Team Picks
-				{c_t1h1, 4},
-				{c_t1h2, 5},
-				{c_t1h3, 6},
-				{c_t1h4, 7},
-				{c_t1h5, 8},
 				// Right Team Bans
-				{c_t2b1, 9},
-				{c_t2b2, 10},
-				{c_t2b3, 11},
+				{c_t2b1, 4},
+				{c_t2b2, 5},
+				{c_t2b3, 6},
+				// Left Team Picks
+				{c_t1h1, 7},
+				{c_t1h2, 8},
+				{c_t1h3, 9},
+				{c_t1h4, 10},
+				{c_t1h5, 11},
 				// Right Team Picks
 				{c_t2h1, 12},
 				{c_t2h2, 13},

@@ -121,7 +121,7 @@ namespace drafter
 			this.c_t2b3.Name = "c_t2b3";
 			this.c_t2b3.Size = new System.Drawing.Size(80, 21);
 			this.c_t2b3.Sorted = true;
-			this.c_t2b3.TabIndex = 110;
+			this.c_t2b3.TabIndex = 105;
 			// 
 			// c_t2b2
 			// 
@@ -132,7 +132,7 @@ namespace drafter
 			this.c_t2b2.Name = "c_t2b2";
 			this.c_t2b2.Size = new System.Drawing.Size(80, 21);
 			this.c_t2b2.Sorted = true;
-			this.c_t2b2.TabIndex = 109;
+			this.c_t2b2.TabIndex = 104;
 			// 
 			// c_t2b1
 			// 
@@ -143,7 +143,7 @@ namespace drafter
 			this.c_t2b1.Name = "c_t2b1";
 			this.c_t2b1.Size = new System.Drawing.Size(80, 21);
 			this.c_t2b1.Sorted = true;
-			this.c_t2b1.TabIndex = 108;
+			this.c_t2b1.TabIndex = 103;
 			// 
 			// l_t1b1
 			// 
@@ -202,7 +202,7 @@ namespace drafter
 			this.c_t1h1.Name = "c_t1h1";
 			this.c_t1h1.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h1.Sorted = true;
-			this.c_t1h1.TabIndex = 103;
+			this.c_t1h1.TabIndex = 106;
 			// 
 			// l_t1h1
 			// 
@@ -229,7 +229,7 @@ namespace drafter
 			this.c_t1h2.Name = "c_t1h2";
 			this.c_t1h2.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h2.Sorted = true;
-			this.c_t1h2.TabIndex = 104;
+			this.c_t1h2.TabIndex = 107;
 			// 
 			// l_t1h3
 			// 
@@ -248,7 +248,7 @@ namespace drafter
 			this.c_t1h3.Name = "c_t1h3";
 			this.c_t1h3.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h3.Sorted = true;
-			this.c_t1h3.TabIndex = 105;
+			this.c_t1h3.TabIndex = 108;
 			// 
 			// l_t1h4
 			// 
@@ -267,7 +267,7 @@ namespace drafter
 			this.c_t1h4.Name = "c_t1h4";
 			this.c_t1h4.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h4.Sorted = true;
-			this.c_t1h4.TabIndex = 106;
+			this.c_t1h4.TabIndex = 109;
 			// 
 			// l_t1h5
 			// 
@@ -286,7 +286,7 @@ namespace drafter
 			this.c_t1h5.Name = "c_t1h5";
 			this.c_t1h5.Size = new System.Drawing.Size(120, 21);
 			this.c_t1h5.Sorted = true;
-			this.c_t1h5.TabIndex = 107;
+			this.c_t1h5.TabIndex = 110;
 			// 
 			// c_t2h1
 			// 
@@ -465,7 +465,7 @@ namespace drafter
 			this.rbSimple.Size = new System.Drawing.Size(104, 20);
 			this.rbSimple.TabIndex = 300;
 			this.rbSimple.TabStop = true;
-			this.rbSimple.Text = "Simple";
+			this.rbSimple.Text = "Bans then Picks";
 			this.rbSimple.UseVisualStyleBackColor = true;
 			this.rbSimple.CheckedChanged += new System.EventHandler(this.RadioButtonCheckedChanged);
 			// 
