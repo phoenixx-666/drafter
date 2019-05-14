@@ -76,6 +76,10 @@ namespace drafter
 			this.rbFPRight = new System.Windows.Forms.RadioButton();
 			this.rbFPLeft = new System.Windows.Forms.RadioButton();
 			this.rbSimple = new System.Windows.Forms.RadioButton();
+			this.c_bg = new System.Windows.Forms.ComboBox();
+			this.l_bg = new System.Windows.Forms.Label();
+			this.ch_t1w = new System.Windows.Forms.CheckBox();
+			this.ch_t2w = new System.Windows.Forms.CheckBox();
 			this.gbTabOrder.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -391,7 +395,7 @@ namespace drafter
 			this.tResult.Name = "tResult";
 			this.tResult.ReadOnly = true;
 			this.tResult.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-			this.tResult.Size = new System.Drawing.Size(552, 56);
+			this.tResult.Size = new System.Drawing.Size(552, 84);
 			this.tResult.TabIndex = 19;
 			this.tResult.GotFocus += new System.EventHandler(this.TResultGotFocus);
 			// 
@@ -407,7 +411,7 @@ namespace drafter
 			// 
 			// bCopy
 			// 
-			this.bCopy.Location = new System.Drawing.Point(8, 288);
+			this.bCopy.Location = new System.Drawing.Point(8, 312);
 			this.bCopy.Name = "bCopy";
 			this.bCopy.Size = new System.Drawing.Size(104, 32);
 			this.bCopy.TabIndex = 200;
@@ -417,7 +421,7 @@ namespace drafter
 			// 
 			// bClear
 			// 
-			this.bClear.Location = new System.Drawing.Point(456, 288);
+			this.bClear.Location = new System.Drawing.Point(456, 312);
 			this.bClear.Name = "bClear";
 			this.bClear.Size = new System.Drawing.Size(104, 32);
 			this.bClear.TabIndex = 201;
@@ -430,7 +434,7 @@ namespace drafter
 			this.gbTabOrder.Controls.Add(this.rbFPRight);
 			this.gbTabOrder.Controls.Add(this.rbFPLeft);
 			this.gbTabOrder.Controls.Add(this.rbSimple);
-			this.gbTabOrder.Location = new System.Drawing.Point(120, 284);
+			this.gbTabOrder.Location = new System.Drawing.Point(120, 308);
 			this.gbTabOrder.Name = "gbTabOrder";
 			this.gbTabOrder.Size = new System.Drawing.Size(328, 40);
 			this.gbTabOrder.TabIndex = 21;
@@ -469,11 +473,51 @@ namespace drafter
 			this.rbSimple.UseVisualStyleBackColor = true;
 			this.rbSimple.CheckedChanged += new System.EventHandler(this.RadioButtonCheckedChanged);
 			// 
+			// c_bg
+			// 
+			this.c_bg.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+			this.c_bg.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+			this.c_bg.FormattingEnabled = true;
+			this.c_bg.Location = new System.Drawing.Point(200, 192);
+			this.c_bg.Name = "c_bg";
+			this.c_bg.Size = new System.Drawing.Size(160, 21);
+			this.c_bg.Sorted = true;
+			this.c_bg.TabIndex = 120;
+			// 
+			// l_bg
+			// 
+			this.l_bg.Location = new System.Drawing.Point(200, 176);
+			this.l_bg.Name = "l_bg";
+			this.l_bg.Size = new System.Drawing.Size(160, 16);
+			this.l_bg.TabIndex = 204;
+			this.l_bg.Text = "Battleground";
+			// 
+			// ch_t1w
+			// 
+			this.ch_t1w.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+			this.ch_t1w.Location = new System.Drawing.Point(168, 192);
+			this.ch_t1w.Name = "ch_t1w";
+			this.ch_t1w.Size = new System.Drawing.Size(24, 24);
+			this.ch_t1w.TabIndex = 121;
+			this.ch_t1w.UseVisualStyleBackColor = true;
+			// 
+			// ch_t2w
+			// 
+			this.ch_t2w.Location = new System.Drawing.Point(368, 192);
+			this.ch_t2w.Name = "ch_t2w";
+			this.ch_t2w.Size = new System.Drawing.Size(16, 24);
+			this.ch_t2w.TabIndex = 122;
+			this.ch_t2w.UseVisualStyleBackColor = true;
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(569, 329);
+			this.ClientSize = new System.Drawing.Size(569, 355);
+			this.Controls.Add(this.ch_t2w);
+			this.Controls.Add(this.ch_t1w);
+			this.Controls.Add(this.l_bg);
+			this.Controls.Add(this.c_bg);
 			this.Controls.Add(this.gbTabOrder);
 			this.Controls.Add(this.bClear);
 			this.Controls.Add(this.bCopy);
@@ -518,6 +562,10 @@ namespace drafter
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.CheckBox ch_t2w;
+		private System.Windows.Forms.CheckBox ch_t1w;
+		private System.Windows.Forms.Label l_bg;
+		private System.Windows.Forms.ComboBox c_bg;
 		private System.Windows.Forms.RadioButton rbFPLeft;
 		private System.Windows.Forms.RadioButton rbFPRight;
 		private System.Windows.Forms.RadioButton rbSimple;

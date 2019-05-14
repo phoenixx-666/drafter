@@ -196,7 +196,7 @@ namespace drafter
 				return;
 
 			if (parserRe == null)
-				parserRe = new Regex("t[12](b[1-3]|h[1-5])");
+				parserRe = new Regex("(t[12](b[1-3]|h[1-5])|battleground|win)");
 
 			Dictionary<string, string> dict = new Dictionary<string, string>();
 			foreach (string chunk in text.Split('|')) {
@@ -212,10 +212,18 @@ namespace drafter
 				return;
 
 			locked = true;
-			foreach (ComboBox c in Controls.OfType<ComboBox>()) {
+			foreach (ComboBox c in Controls.OfType<ComboBox>().Where(c => c != c_bg)) {
 				string key = c.Name.Substring(2);
 				c.Text = dict.ContainsKey(key) ? dict[key] : "";
 			}
+			c_bg.Text = dict.ContainsKey("battleground") ? dict["battleground"] : "";
+			if (dict.ContainsKey("win")) {
+				string winner = dict["win"];
+				ch_t1w.Checked = winner == "1";
+				ch_t2w.Checked = winner == "2";
+			}
+			else
+				ch_t1w.Checked = ch_t2w.Checked = false;
 			locked = false;
 			update();
 		}
@@ -231,12 +239,25 @@ namespace drafter
             	return (string)Regex.Replace(s, "\\s", "");
             }).Where(s => s != "").ToArray();
 
-			foreach (ComboBox c in Controls.OfType<ComboBox>()) {
+			foreach (ComboBox c in Controls.OfType<ComboBox>().Where(c => c != c_bg)) {
 				foreach (string heroname in heroes) {
 					c.Items.Add(heroname);
 				}
 				c.TextChanged += cboxChange;
 			}
+
+			foreach (string bgname in new string[] {
+			         "Alterac Pass", "Battlefield of Eternity", "Blackheart's Bay",
+			         "Braxis Holdout", "Cursed Hollow", "Dragon Shire",
+			         "Garden of Terror", "Hanamura Temple", "Haunted Mines",
+			         "Infernal Shrines", "Sky Temple", "Tomb of the Spider Queen",
+			         "Towers of Doom", "Volskaya Foundry", "Warhead Junction"
+			         }) {
+				c_bg.Items.Add(bgname);
+			}
+			c_bg.TextChanged += cboxChange;
+			ch_t1w.CheckedChanged += cboxChange;
+			ch_t2w.CheckedChanged += cboxChange;
 			update();
 		}
 
@@ -250,12 +271,19 @@ namespace drafter
 		void update() {
 
 			string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
-				"|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
+				"|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n" +
+				"|battleground={16} |win={17}\r\n";
+			string winner = "";
+			if (ch_t1w.Checked && !ch_t2w.Checked)
+				winner = "1";
+			else if (ch_t2w.Checked && !ch_t1w.Checked)
+				winner = "2";
 			tResult.Text = string.Format(template,
 			                             c_t1h1.Text, c_t1h2.Text, c_t1h3.Text, c_t1h4.Text, c_t1h5.Text,
 			                             c_t1b1.Text, c_t1b2.Text, c_t1b3.Text,
 			                             c_t2h1.Text, c_t2h2.Text, c_t2h3.Text, c_t2h4.Text, c_t2h5.Text,
-			                             c_t2b1.Text, c_t2b2.Text, c_t2b3.Text);
+			                             c_t2b1.Text, c_t2b2.Text, c_t2b3.Text,
+			                             c_bg.Text, winner);
 		}
 
 		void swap(ComboBox a, ComboBox b) {
@@ -290,6 +318,7 @@ namespace drafter
 			foreach (ComboBox c in Controls.OfType<ComboBox>()) {
 				c.Text = "";
 			}
+			ch_t1w.Checked = ch_t2w.Checked = false;
 			locked = false;
 			update();
 			initialCBox.Focus();
