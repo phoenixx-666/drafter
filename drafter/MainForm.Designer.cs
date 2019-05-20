@@ -555,12 +555,15 @@ namespace drafter
 			this.Controls.Add(this.c_t1b3);
 			this.Controls.Add(this.c_t1b2);
 			this.Controls.Add(this.c_t1b1);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.MaximizeBox = false;
 			this.Name = "MainForm";
 			this.Text = "drafter";
 			this.Load += new System.EventHandler(this.MainFormLoad);
 			this.gbTabOrder.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
+
 		}
 		private System.Windows.Forms.CheckBox ch_t2w;
 		private System.Windows.Forms.CheckBox ch_t1w;
