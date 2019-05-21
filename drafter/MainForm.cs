@@ -303,6 +303,10 @@ namespace drafter
 			swap(c_t1b1, c_t2b1);
 			swap(c_t1b2, c_t2b2);
 			swap(c_t1b3, c_t2b3);
+			if (ch_t1w.Checked != ch_t2w.Checked) {
+				ch_t1w.Checked = !ch_t1w.Checked;
+				ch_t2w.Checked = !ch_t2w.Checked;
+			}
 			locked = false;
 			update();
 		}
