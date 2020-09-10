@@ -1,15 +1,5 @@
-﻿/*
- * Created by SharpDevelop.
- * User: nonexyst
- * Date: 10.02.2019
- * Time: 14:59
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-namespace drafter
-{
-	partial class MainForm
-	{
+﻿namespace drafter {
+	partial class MainForm {
 		/// <summary>
 		/// Designer variable used to keep track of non-visual components.
 		/// </summary>
@@ -19,8 +9,7 @@ namespace drafter
 		/// Disposes resources used by the form.
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing)
-		{
+		protected override void Dispose(bool disposing) {
 			if (disposing) {
 				if (components != null) {
 					components.Dispose();
@@ -34,8 +23,7 @@ namespace drafter
 		/// Do not change the method contents inside the source code editor. The Forms designer might
 		/// not be able to load this method if it was changed manually.
 		/// </summary>
-		private void InitializeComponent()
-		{
+		private void InitializeComponent() {
             this.bClear = new System.Windows.Forms.Button();
             this.bCopy = new System.Windows.Forms.Button();
             this.bSwap = new System.Windows.Forms.Button();
@@ -79,6 +67,7 @@ namespace drafter
             this.rbFPLeft = new System.Windows.Forms.RadioButton();
             this.rbFPRight = new System.Windows.Forms.RadioButton();
             this.rbSimple = new System.Windows.Forms.RadioButton();
+            this.l_indication = new System.Windows.Forms.Label();
             this.tResult = new System.Windows.Forms.TextBox();
             this.gbTabOrder.SuspendLayout();
             this.SuspendLayout();
@@ -509,6 +498,16 @@ namespace drafter
             this.l_t2b3.TabIndex = 10;
             this.l_t2b3.Text = "Ban 3";
             // 
+            // l_indication
+            // 
+            this.l_indication.Location = new System.Drawing.Point(181, 64);
+            this.l_indication.Name = "l_indication";
+            this.l_indication.Size = new System.Drawing.Size(203, 21);
+            this.l_indication.TabIndex = 205;
+            this.l_indication.Text = "Indication";
+            this.l_indication.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.l_indication.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -555,6 +554,7 @@ namespace drafter
             this.Controls.Add(this.c_t1b3);
             this.Controls.Add(this.c_t1b2);
             this.Controls.Add(this.c_t1b1);
+            this.Controls.Add(this.l_indication);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.Name = "MainForm";
@@ -609,5 +609,6 @@ namespace drafter
 		private System.Windows.Forms.ComboBox c_t1b3;
 		private System.Windows.Forms.ComboBox c_t1b2;
 		private System.Windows.Forms.ComboBox c_t1b1;
-	}
+        private System.Windows.Forms.Label l_indication;
+    }
 }

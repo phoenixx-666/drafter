@@ -1,23 +1,14 @@
-﻿/*
- * Created by SharpDevelop.
- * User: nonexyst
- * Date: 10.02.2019
- * Time: 14:59
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
-namespace drafter
-{
-	public partial class MainForm : Form
-	{
+namespace drafter {
+	public partial class MainForm : Form {
 		bool locked = false;
 		Control[] teamAPicks, teamBPicks;
 		Dictionary<ComboBox, int> indicesSimple, indicesFPLeft, indicesFPRight;
@@ -25,13 +16,15 @@ namespace drafter
 		Dictionary<object, ComboBox> initialCBoxes;
 		ComboBox initialCBox;
 		Regex cleanRe = null, parserRe = null;
+        Timer timer = null;
+        int message_cycles;
+        int message_duration;
 
-		public MainForm()
-		{
+		public MainForm() 		{
 			InitializeComponent();
 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            this.Icon = new System.Drawing.Icon(assembly.GetManifestResourceStream("drafter.drafter.ico"));
+            this.Icon = new Icon(assembly.GetManifestResourceStream("drafter.drafter.ico"));
 
             teamAPicks = new Control[] {
 				c_t1b1,
@@ -153,11 +146,19 @@ namespace drafter
 						return true;
 					break;
 				case Keys.Control | Keys.Shift | Keys.C:
+                case Keys.Control | Keys.S:
 					copy(true);
 					return true;
 				case Keys.Control | Keys.Shift | Keys.V:
+                case Keys.Control | Keys.R:
 					paste();
 					return true;
+                case Keys.Control | Keys.W:
+                    swap();
+                    return true;
+                case Keys.Control | Keys.Space:
+                    clear();
+                    return true;
 			}
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
@@ -185,53 +186,127 @@ namespace drafter
 					return false;
 			}
 			Clipboard.SetText(tResult.Text);
+            indicate("Copied to clipboard!");
 			return true;
 		}
 
 		void paste() {
-			if (cleanRe == null)
-				cleanRe = new Regex("\\s+");
+            if (Clipboard.ContainsText())
+                tryPasteText(Clipboard.GetText());
+            else if (Clipboard.ContainsImage())
+                MessageBox.Show("Screenshot parsing not supported (yet).", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            else
+                MessageBox.Show("Unsupported clipboard content.", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
 
-			string text = cleanRe.Replace(Clipboard.GetText(), " ");
-			if (text.Length == 0)
-				return;
+        void tryPasteText(string text) {
+            if (cleanRe == null)
+                cleanRe = new Regex("\\s+");
 
-			if (parserRe == null)
-				parserRe = new Regex("(t[12](b[1-3]|h[1-5])|battleground|win)");
+            text = cleanRe.Replace(text, " ");
+            if (text.Length == 0)
+                return;
 
-			Dictionary<string, string> dict = new Dictionary<string, string>();
-			foreach (string chunk in text.Split('|')) {
-               	string[] keyval = chunk.Split('=');
-               	if (keyval.Length != 2)
-               		continue;
-               	string key = keyval[0].Trim(), val = keyval[1].Trim();
-               	if (parserRe.Match(key).Success)
-               	    dict[key] = val; 
+            if (parserRe == null)
+                parserRe = new Regex("(t[12](b[1-3]|h[1-5])|battleground|win)");
+
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            foreach (string chunk in text.Split('|')) {
+                string[] keyval = chunk.Split('=');
+                if (keyval.Length != 2)
+                    continue;
+                string key = keyval[0].Trim(), val = keyval[1].Trim();
+                if (parserRe.Match(key).Success && val.Length != 0)
+                    dict[key] = val;
             };
 
-			if (dict.Count == 0)
-				return;
+            if (dict.Count == 0)
+                return;
 
-			locked = true;
-			foreach (ComboBox c in Controls.OfType<ComboBox>().Where(c => c != c_bg)) {
-				string key = c.Name.Substring(2);
-				c.Text = dict.ContainsKey(key) ? dict[key] : "";
-			}
-			c_bg.Text = dict.ContainsKey("battleground") ? dict["battleground"] : "";
-			if (dict.ContainsKey("win")) {
-				string winner = dict["win"];
-				ch_t1w.Checked = winner == "1";
-				ch_t2w.Checked = winner == "2";
-			}
-			else
-				ch_t1w.Checked = ch_t2w.Checked = false;
-			locked = false;
-			update();
-		}
+            locked = true;
+            foreach (ComboBox c in Controls.OfType<ComboBox>().Where(c => c != c_bg)) {
+                string key = c.Name.Substring(2);
+                c.Text = dict.ContainsKey(key) ? dict[key] : c.Text;
+            }
+            c_bg.Text = dict.ContainsKey("battleground") ? dict["battleground"] : c_bg.Text;
+            if (dict.ContainsKey("win")) {
+                string winner = dict["win"];
+                ch_t1w.Checked = winner == "1";
+                ch_t2w.Checked = winner == "2";
+            }
+            locked = false;
+            update();
+        }
 
-		void MainFormLoad(object sender, EventArgs e)
-		{
-			string herolistfile = Path.Combine(Application.StartupPath, "herolist");
+        void update() {
+            string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
+                              "|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
+            string winner = "";
+            if (ch_t1w.Checked && !ch_t2w.Checked)
+                winner = "1";
+            else if (ch_t2w.Checked && !ch_t1w.Checked)
+                winner = "2";
+            string result = string.Format(template,
+                                          c_t1h1.Text, c_t1h2.Text, c_t1h3.Text, c_t1h4.Text, c_t1h5.Text,
+                                          c_t1b1.Text, c_t1b2.Text, c_t1b3.Text,
+                                          c_t2h1.Text, c_t2h2.Text, c_t2h3.Text, c_t2h4.Text, c_t2h5.Text,
+                                          c_t2b1.Text, c_t2b2.Text, c_t2b3.Text);
+            if (c_bg.Text != "" || winner != "")
+                result += string.Format("|battleground={0} |win={1}\r\n", c_bg.Text, winner);
+            tResult.Text = result;
+        }
+
+        void swap(ComboBox a, ComboBox b) {
+            string temp = a.Text;
+            a.Text = b.Text;
+            b.Text = temp;
+        }
+
+        void swap() {
+            locked = true;
+            swap(c_t1h1, c_t2h1);
+            swap(c_t1h2, c_t2h2);
+            swap(c_t1h3, c_t2h3);
+            swap(c_t1h4, c_t2h4);
+            swap(c_t1h5, c_t2h5);
+            swap(c_t1b1, c_t2b1);
+            swap(c_t1b2, c_t2b2);
+            swap(c_t1b3, c_t2b3);
+            if (ch_t1w.Checked != ch_t2w.Checked) {
+                ch_t1w.Checked = !ch_t1w.Checked;
+                ch_t2w.Checked = !ch_t2w.Checked;
+            }
+            locked = false;
+            update();
+        }
+
+        void clear() {
+            locked = true;
+            foreach (ComboBox c in Controls.OfType<ComboBox>()) {
+                c.Text = "";
+            }
+            ch_t1w.Checked = ch_t2w.Checked = false;
+            locked = false;
+            update();
+            initialCBox.Focus();
+        }
+
+        void indicate(string message) {
+            if (timer == null) {
+                timer = new Timer();
+                timer.Interval = 10;
+                timer.Tick += Timer_Tick;
+            }
+            timer.Stop();
+            message_cycles = message_duration = 4 * message.Length;
+            l_indication.Text = message;
+            l_indication.ForeColor = Color.FromKnownColor(KnownColor.ControlText);
+            l_indication.Visible = true;
+            timer.Start();
+        }
+
+        void MainFormLoad(object sender, EventArgs e) {
+            string herolistfile = Path.Combine(Application.StartupPath, "herolist");
 			if (!File.Exists(herolistfile)) {
 				herolistfile = Path.Combine(Application.StartupPath, "herolist.default");
 			}
@@ -269,73 +344,23 @@ namespace drafter
 			update();
 		}
 
-		void update() {
-			string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
-				              "|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
-			string winner = "";
-			if (ch_t1w.Checked && !ch_t2w.Checked)
-				winner = "1";
-			else if (ch_t2w.Checked && !ch_t1w.Checked)
-				winner = "2";
-			string result = string.Format(template,
-			                              c_t1h1.Text, c_t1h2.Text, c_t1h3.Text, c_t1h4.Text, c_t1h5.Text,
-			                              c_t1b1.Text, c_t1b2.Text, c_t1b3.Text,
-			                              c_t2h1.Text, c_t2h2.Text, c_t2h3.Text, c_t2h4.Text, c_t2h5.Text,
-			                              c_t2b1.Text, c_t2b2.Text, c_t2b3.Text);
-			if (c_bg.Text != "" || winner != "")
-				result += string.Format("|battleground={0} |win={1}\r\n", c_bg.Text, winner);
-			tResult.Text = result;
+        void BSwapClick(object sender, EventArgs e) {
+            swap();
 		}
 
-		void swap(ComboBox a, ComboBox b) {
-			string temp = a.Text;
-			a.Text = b.Text;
-			b.Text = temp;
-		}
-
-		void BSwapClick(object sender, EventArgs e)
-		{
-			locked = true;
-			swap(c_t1h1, c_t2h1);
-			swap(c_t1h2, c_t2h2);
-			swap(c_t1h3, c_t2h3);
-			swap(c_t1h4, c_t2h4);
-			swap(c_t1h5, c_t2h5);
-			swap(c_t1b1, c_t2b1);
-			swap(c_t1b2, c_t2b2);
-			swap(c_t1b3, c_t2b3);
-			if (ch_t1w.Checked != ch_t2w.Checked) {
-				ch_t1w.Checked = !ch_t1w.Checked;
-				ch_t2w.Checked = !ch_t2w.Checked;
-			}
-			locked = false;
-			update();
-		}
-
-		void BCopyClick(object sender, EventArgs e)
-		{
+		void BCopyClick(object sender, EventArgs e) {
 			copy(true);
 		}
 
-		void BClearClick(object sender, EventArgs e)
-		{
-			locked = true;
-			foreach (ComboBox c in Controls.OfType<ComboBox>()) {
-				c.Text = "";
-			}
-			ch_t1w.Checked = ch_t2w.Checked = false;
-			locked = false;
-			update();
-			initialCBox.Focus();
+		void BClearClick(object sender, EventArgs e) {
+            clear();
 		}
 
-		void TResultGotFocus(object sender, EventArgs e)
-		{
+		void TResultGotFocus(object sender, EventArgs e) {
 			tResult.SelectAll();
 		}
 
-		void RadioButtonCheckedChanged(object sender, EventArgs e)
-		{
+		void RadioButtonCheckedChanged(object sender, EventArgs e) {
 			RadioButton radioButton = sender as RadioButton;
 			if (radioButton == null || !radioButton.Checked)
 				return;
@@ -345,5 +370,21 @@ namespace drafter
 			initialCBox = initialCBoxes[sender];
 			initialCBox.Focus();
 		}
+
+        void Timer_Tick(object sender, EventArgs e) {
+            message_cycles--;
+            if (message_cycles == 0) {
+                l_indication.Visible = false;
+                timer.Stop();
+            } else {
+                double multiplier = ((double)message_duration - message_cycles) / message_duration;
+                Color fore_color = Color.FromKnownColor(KnownColor.ControlText);
+                Color back_color = Color.FromKnownColor(KnownColor.Control);
+                Color dest_color = Color.FromArgb(fore_color.R + (int)(multiplier * (back_color.R - fore_color.R)),
+                                                  fore_color.G + (int)(multiplier * (back_color.G - fore_color.G)),
+                                                  fore_color.B + (int)(multiplier * (back_color.B - fore_color.B)));
+                l_indication.ForeColor = dest_color;
+            }
+        }
 	}
 }
