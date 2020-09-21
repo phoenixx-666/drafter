@@ -1,26 +1,65 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace drafter {
 	public partial class MainForm : Form {
+
+        public struct SearchResult {
+            private string heroname;
+            private List<Emgu.CV.Structure.MDMatch[]> matches;
+            private RectangleF rect;
+            private PointF loc;
+            double distance;
+
+            public SearchResult(string heroname, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp) {
+                this.heroname = heroname.Split('_')[0];
+                this.matches = matches;
+                var nmatches = matches.Count;
+                var mp = matches.Select(m => kp[m[0].TrainIdx].Point).ToList();
+                var xs = mp.Select(pt => pt.X).OrderBy(n => n).ToList();
+                var ys = mp.Select(pt => pt.Y).OrderBy(n => n).ToList();
+                var (minx, maxx) = (xs.First(), xs.Last());
+                var (miny, maxy) = (ys.First(), ys.Last());
+                rect = new RectangleF(minx, miny, maxx - minx, maxy - miny);
+                if (mp.Count % 2 == 0) {
+                    var middle = (int)(nmatches / 2);
+                    loc = new PointF((xs[middle - 1] + xs[middle]) / 2, (ys[middle - 1] + ys[middle]) / 2);
+                } else {
+                    var middle = (int)((nmatches - 1) / 2);
+                    loc = new PointF(xs[middle], ys[middle]);
+                }
+                distance = matches.Select(m => (double)1 / m[0].Distance).Sum();
+            }
+
+            public string HeroName { get => heroname; }
+            public List<Emgu.CV.Structure.MDMatch[]> Matches { get => matches; }
+            public RectangleF Rect { get => rect; }
+            public PointF Location { get => loc; }
+            public double Distance { get => distance; }
+        }
+
 		bool locked = false;
-		Control[] teamAPicks, teamBPicks;
-		Dictionary<ComboBox, int> indicesSimple, indicesFPLeft, indicesFPRight;
-		Dictionary<object, Dictionary<ComboBox, int>> indexDicts;
-		Dictionary<object, ComboBox> initialCBoxes;
+        readonly Control[] teamAPicks, teamBPicks;
+		readonly Dictionary<ComboBox, int> indicesSimple, indicesFPLeft, indicesFPRight;
+        readonly Dictionary<object, Dictionary<ComboBox, int>> indexDicts;
+        readonly Dictionary<object, ComboBox> initialCBoxes;
 		ComboBox initialCBox;
-		Regex cleanRe = null, parserRe = null;
+        ScreenshotViewer screenshotViewer;
+        Regex cleanRe = null, parserRe = null;
         Timer timer = null;
         int message_cycles;
         int message_duration;
+        Dictionary<string, Emgu.CV.Mat> heroDescriptors;
 
-		public MainForm() 		{
+        public MainForm() 		{
 			InitializeComponent();
 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -192,14 +231,14 @@ namespace drafter {
 
 		void paste() {
             if (Clipboard.ContainsText())
-                tryPasteText(Clipboard.GetText());
+                tryPaste(Clipboard.GetText());
             else if (Clipboard.ContainsImage())
-                MessageBox.Show("Screenshot parsing not supported (yet).", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                tryPaste(Clipboard.GetImage());
             else
                 MessageBox.Show("Unsupported clipboard content.", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        void tryPasteText(string text) {
+        void tryPaste(string text) {
             if (cleanRe == null)
                 cleanRe = new Regex("\\s+");
 
@@ -236,6 +275,123 @@ namespace drafter {
             }
             locked = false;
             update();
+        }
+
+        void tryPaste(Image image) {
+            var minSize = new Size(1920, 1080);
+            Size newSize;
+            if (image.Width < minSize.Width || image.Height < minSize.Height) {
+                var ratio = Math.Max((double)minSize.Width / image.Width, (double)minSize.Height / image.Height);
+                newSize = new Size((int)(ratio * image.Width), (int)(ratio * image.Height));
+            } else 
+                newSize = image.Size;
+            var newRect = new Rectangle(Point.Empty, newSize);
+            var bitmap = new Bitmap(newSize.Width, newSize.Height, PixelFormat.Format24bppRgb);
+
+            var graphics = Graphics.FromImage(bitmap);
+            
+            //graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
+            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+            graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+            graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
+            using (var wrapMode = new System.Drawing.Imaging.ImageAttributes()) {
+                wrapMode.SetWrapMode(System.Drawing.Drawing2D.WrapMode.TileFlipXY);
+                graphics.DrawImage(image, newRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+            }
+
+            var data = bitmap.LockBits(newRect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+            var nBytes = data.Stride * data.Height;
+            var cvImage = new Emgu.CV.Image<Emgu.CV.Structure.Bgr, byte>(newSize);
+            unsafe {
+                Buffer.MemoryCopy(data.Scan0.ToPointer(), cvImage.Mat.DataPointer.ToPointer(), nBytes, nBytes);
+            }
+            bitmap.UnlockBits(data);
+
+            var sift = new Emgu.CV.Features2D.SIFT();
+            var flann = new Emgu.CV.Features2D.FlannBasedMatcher(new Emgu.CV.Flann.KdTreeIndexParams(5), new Emgu.CV.Flann.SearchParams());
+
+            if (heroDescriptors == null) {
+                heroDescriptors = new Dictionary<string, Emgu.CV.Mat>();
+                foreach (var filename in Directory.GetFiles("portraits", "*.png")) {
+                    var portrait = new Emgu.CV.Image<Emgu.CV.Structure.Bgra, byte>(filename);
+                    var heroname = Path.GetFileNameWithoutExtension(filename);
+                    var kp0 = new Emgu.CV.Util.VectorOfKeyPoint();
+                    var des0 = new Emgu.CV.Mat();
+                    sift.DetectAndCompute(portrait, null, kp0, des0, false);
+                    heroDescriptors[heroname] = des0;
+                }
+            }
+
+            var kp = new Emgu.CV.Util.VectorOfKeyPoint();
+            var des = new Emgu.CV.Mat();
+            sift.DetectAndCompute(cvImage, null, kp, des, false);
+
+            var searchResults = new List<SearchResult>();
+            foreach (var kvp in heroDescriptors) {
+                var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch();
+                flann.KnnMatch(kvp.Value, des, vMatches, 2);
+                var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < 0.5 * m[1].Distance).ToList();
+                if (matches.Count > 0)
+                    searchResults.Add(new SearchResult(kvp.Key, matches, kp));
+            }
+            searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
+            searchResults.RemoveAll(t => searchResults.Take(searchResults.IndexOf(t)).Select(u => u.HeroName).Contains(t.HeroName));
+            var bans_picks = searchResults.Take(16).OrderBy(t => t.Location.Y).ToList();
+            var bans = bans_picks.Take(6).OrderBy(t => t.Location.X).ToList();
+            var picks = bans_picks.Skip(6).OrderBy(t => t.Location.X).ToList();
+            var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
+            var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
+
+            float radius = 0.025f * bitmap.Width;
+            var font = new Font("Courier New", 30, FontStyle.Bold, GraphicsUnit.Pixel);
+            foreach (var searchResult in searchResults) {
+                Color clr;
+                if (bans.Contains(searchResult))
+                    clr = Color.Green;
+                else if (t1picks.Contains(searchResult))
+                    clr = Color.Blue;
+                else if (t2picks.Contains(searchResult))
+                    clr = Color.Red;
+                else
+                    continue;
+                PointF pt = searchResult.Location;
+                graphics.DrawEllipse(new Pen(clr, 2), pt.X - radius, pt.Y - radius, radius * 2, radius * 2);
+                graphics.DrawLine(new Pen(clr, 1), pt.X, pt.Y - radius, pt.X, pt.Y);
+                graphics.DrawString(searchResult.HeroName, font, Brushes.White, pt);
+            }
+
+            graphics.Dispose();
+
+            locked = true;
+            try {
+                c_t1b1.Text = bans[0].HeroName;
+                c_t1b2.Text = bans[1].HeroName;
+                c_t1b3.Text = bans[2].HeroName;
+                c_t2b1.Text = bans[3].HeroName;
+                c_t2b2.Text = bans[4].HeroName;
+                c_t2b3.Text = bans[5].HeroName;
+                c_t1h1.Text = t1picks[0].HeroName;
+                c_t1h2.Text = t1picks[1].HeroName;
+                c_t1h3.Text = t1picks[2].HeroName;
+                c_t1h4.Text = t1picks[3].HeroName;
+                c_t1h5.Text = t1picks[4].HeroName;
+                c_t2h1.Text = t2picks[0].HeroName;
+                c_t2h2.Text = t2picks[1].HeroName;
+                c_t2h3.Text = t2picks[2].HeroName;
+                c_t2h4.Text = t2picks[3].HeroName;
+                c_t2h5.Text = t2picks[4].HeroName;
+            } catch (ArgumentOutOfRangeException) { };
+            locked = false;
+            update();
+
+            if (screenshotViewer == null)
+                screenshotViewer = new ScreenshotViewer(this);
+            screenshotViewer.SetImage(bitmap);
+            screenshotViewer.Show();
+
+            //MessageBox.Show("Screenshot parsing not supported (yet).", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         void update() {
@@ -361,8 +517,8 @@ namespace drafter {
 		}
 
 		void RadioButtonCheckedChanged(object sender, EventArgs e) {
-			RadioButton radioButton = sender as RadioButton;
-			if (radioButton == null || !radioButton.Checked)
+			RadioButton radioButton = (RadioButton)sender;
+			if (!radioButton.Checked)
 				return;
 			foreach (KeyValuePair<ComboBox, int> kvp in indexDicts[sender]) {
 				kvp.Key.TabIndex = 100 + kvp.Value;
