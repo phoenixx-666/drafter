@@ -107,6 +107,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SearchResult.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="ScreenshotViewer.cs">
       <SubType>Form</SubType>
     </Compile>

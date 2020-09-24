@@ -1,51 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace drafter {
 	public partial class MainForm : Form {
-
-        public struct SearchResult {
-            private string heroname;
-            private List<Emgu.CV.Structure.MDMatch[]> matches;
-            private RectangleF rect;
-            private PointF loc;
-            double distance;
-
-            public SearchResult(string heroname, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp) {
-                this.heroname = heroname.Split('_')[0];
-                this.matches = matches;
-                var nmatches = matches.Count;
-                var mp = matches.Select(m => kp[m[0].TrainIdx].Point).ToList();
-                var xs = mp.Select(pt => pt.X).OrderBy(n => n).ToList();
-                var ys = mp.Select(pt => pt.Y).OrderBy(n => n).ToList();
-                var (minx, maxx) = (xs.First(), xs.Last());
-                var (miny, maxy) = (ys.First(), ys.Last());
-                rect = new RectangleF(minx, miny, maxx - minx, maxy - miny);
-                if (mp.Count % 2 == 0) {
-                    var middle = (int)(nmatches / 2);
-                    loc = new PointF((xs[middle - 1] + xs[middle]) / 2, (ys[middle - 1] + ys[middle]) / 2);
-                } else {
-                    var middle = (int)((nmatches - 1) / 2);
-                    loc = new PointF(xs[middle], ys[middle]);
-                }
-                distance = matches.Select(m => (double)1 / m[0].Distance).Sum();
-            }
-
-            public string HeroName { get => heroname; }
-            public List<Emgu.CV.Structure.MDMatch[]> Matches { get => matches; }
-            public RectangleF Rect { get => rect; }
-            public PointF Location { get => loc; }
-            public double Distance { get => distance; }
-        }
-
 		bool locked = false;
         readonly Control[] teamAPicks, teamBPicks;
 		readonly Dictionary<ComboBox, int> indicesSimple, indicesFPLeft, indicesFPRight;
@@ -59,7 +24,7 @@ namespace drafter {
         int message_duration;
         Dictionary<string, Emgu.CV.Mat> heroDescriptors;
 
-        public MainForm() 		{
+        public MainForm() {
 			InitializeComponent();
 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
@@ -290,7 +255,6 @@ namespace drafter {
 
             var graphics = Graphics.FromImage(bitmap);
             
-            //graphics.CompositingMode = System.Drawing.Drawing2D.CompositingMode.SourceCopy;
             graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
             graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -310,7 +274,12 @@ namespace drafter {
             bitmap.UnlockBits(data);
 
             var sift = new Emgu.CV.Features2D.SIFT();
-            var flann = new Emgu.CV.Features2D.FlannBasedMatcher(new Emgu.CV.Flann.KdTreeIndexParams(5), new Emgu.CV.Flann.SearchParams());
+            Emgu.CV.Features2D.DescriptorMatcher matcher;
+            var use_bf = true;
+            if (use_bf)
+                matcher = new Emgu.CV.Features2D.BFMatcher(Emgu.CV.Features2D.DistanceType.L2);
+            else
+                matcher = new Emgu.CV.Features2D.FlannBasedMatcher(new Emgu.CV.Flann.KdTreeIndexParams(5), new Emgu.CV.Flann.SearchParams());
 
             if (heroDescriptors == null) {
                 heroDescriptors = new Dictionary<string, Emgu.CV.Mat>();
@@ -331,8 +300,9 @@ namespace drafter {
             var searchResults = new List<SearchResult>();
             foreach (var kvp in heroDescriptors) {
                 var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch();
-                flann.KnnMatch(kvp.Value, des, vMatches, 2);
-                var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < 0.5 * m[1].Distance).ToList();
+                matcher.KnnMatch(kvp.Value, des, vMatches, 2);
+                const float maxdist = 0.7f;
+                var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
                 if (matches.Count > 0)
                     searchResults.Add(new SearchResult(kvp.Key, matches, kp));
             }
@@ -346,7 +316,9 @@ namespace drafter {
 
             float radius = 0.025f * bitmap.Width;
             var font = new Font("Courier New", 30, FontStyle.Bold, GraphicsUnit.Pixel);
+            Debug.WriteLine("================");
             foreach (var searchResult in searchResults) {
+                Debug.WriteLine("{0:s} {1:d} {2:f6}", searchResult.HeroName, searchResult.MatchPoints.Count, searchResult.Distance);
                 Color clr;
                 if (bans.Contains(searchResult))
                     clr = Color.Green;
@@ -357,8 +329,11 @@ namespace drafter {
                 else
                     continue;
                 PointF pt = searchResult.Location;
-                graphics.DrawEllipse(new Pen(clr, 2), pt.X - radius, pt.Y - radius, radius * 2, radius * 2);
+                //graphics.DrawEllipse(new Pen(clr, 2), pt.X - radius, pt.Y - radius, radius * 2, radius * 2);
                 graphics.DrawLine(new Pen(clr, 1), pt.X, pt.Y - radius, pt.X, pt.Y);
+                graphics.DrawRectangle(new Pen(clr, 2), Rectangle.Round(searchResult.Rect));
+                foreach (var pt0 in searchResult.MatchPointsRaw)
+                    graphics.DrawLine(new Pen(clr, 1), pt, pt0);
                 graphics.DrawString(searchResult.HeroName, font, Brushes.White, pt);
             }
 
@@ -390,8 +365,7 @@ namespace drafter {
                 screenshotViewer = new ScreenshotViewer(this);
             screenshotViewer.SetImage(bitmap);
             screenshotViewer.Show();
-
-            //MessageBox.Show("Screenshot parsing not supported (yet).", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            this.Activate();
         }
 
         void update() {
@@ -508,7 +482,7 @@ namespace drafter {
 			copy(true);
 		}
 
-		void BClearClick(object sender, EventArgs e) {
+        void BClearClick(object sender, EventArgs e) {
             clear();
 		}
 
