@@ -507,6 +507,11 @@
             this.l_indication.Text = "Indication";
             this.l_indication.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.l_indication.Visible = false;
+            //
+            // worker
+            //
+            this.worker = new System.ComponentModel.BackgroundWorker();
+            this.worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Worker_DoWork);
             // 
             // MainForm
             // 
@@ -565,7 +570,8 @@
             this.PerformLayout();
 
 		}
-		private System.Windows.Forms.CheckBox ch_t2w;
+
+        private System.Windows.Forms.CheckBox ch_t2w;
 		private System.Windows.Forms.CheckBox ch_t1w;
 		private System.Windows.Forms.Label l_bg;
 		private System.Windows.Forms.ComboBox c_bg;
@@ -610,5 +616,6 @@
 		private System.Windows.Forms.ComboBox c_t1b2;
 		private System.Windows.Forms.ComboBox c_t1b1;
         private System.Windows.Forms.Label l_indication;
+        private System.ComponentModel.BackgroundWorker worker;
     }
 }
