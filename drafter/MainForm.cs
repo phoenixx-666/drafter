@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -22,7 +21,6 @@ namespace drafter {
         int message_cycles;
         int message_duration;
         Dictionary<string, Emgu.CV.Mat> heroDescriptors;
-        Image Job { get; set; }
 
         public MainForm() {
             InitializeComponent();
@@ -224,7 +222,7 @@ namespace drafter {
                     dict[key] = val;
             };
 
-            if (dict.Count == 0)
+            if (dict.Any())
                 return;
 
             locked = true;
@@ -341,7 +339,7 @@ namespace drafter {
 
             Invoke(new Action(() => {
                 if (screenshotViewer == null)
-                    screenshotViewer = new ScreenshotViewer(this);
+                    screenshotViewer = new ScreenshotViewer(this) { Top = Top, Left = Right };
                 screenshotViewer.SetImage(new Bitmap(bitmap));
                 screenshotViewer.Show();
             }));
@@ -384,7 +382,7 @@ namespace drafter {
                 matcher.KnnMatch(kvp.Value, des, vMatches, 2);
                 const float maxdist = 0.7f;
                 var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
-                if (matches.Count > 0)
+                if (matches.Any())
                     searchResults.Add(new SearchResult(kvp.Key, matches, kp));
             }
             searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
@@ -406,55 +404,42 @@ namespace drafter {
 
         public void SetBansPicks(string[] bans, string[] t1picks, string[] t2picks) {
             locked = true;
-            try {
-                c_t1b1.Text = bans[0];
-                c_t1b2.Text = bans[1];
-                c_t1b3.Text = bans[2];
-                c_t2b1.Text = bans[3];
-                c_t2b2.Text = bans[4];
-                c_t2b3.Text = bans[5];
-                c_t1h1.Text = t1picks[0];
-                c_t1h2.Text = t1picks[1];
-                c_t1h3.Text = t1picks[2];
-                c_t1h4.Text = t1picks[3];
-                c_t1h5.Text = t1picks[4];
-                c_t2h1.Text = t2picks[0];
-                c_t2h2.Text = t2picks[1];
-                c_t2h3.Text = t2picks[2];
-                c_t2h4.Text = t2picks[3];
-                c_t2h5.Text = t2picks[4];
-            } catch (ArgumentOutOfRangeException) { };
+            c_t1b1.Text = bans.ElementAtOrDefault(0);
+            c_t1b2.Text = bans.ElementAtOrDefault(1);
+            c_t1b3.Text = bans.ElementAtOrDefault(2);
+            c_t2b1.Text = bans.ElementAtOrDefault(3);
+            c_t2b2.Text = bans.ElementAtOrDefault(4);
+            c_t2b3.Text = bans.ElementAtOrDefault(5);
+            c_t1h1.Text = t1picks.ElementAtOrDefault(0);
+            c_t1h2.Text = t1picks.ElementAtOrDefault(1);
+            c_t1h3.Text = t1picks.ElementAtOrDefault(2);
+            c_t1h4.Text = t1picks.ElementAtOrDefault(3);
+            c_t1h5.Text = t1picks.ElementAtOrDefault(4);
+            c_t2h1.Text = t2picks.ElementAtOrDefault(0);
+            c_t2h2.Text = t2picks.ElementAtOrDefault(1);
+            c_t2h3.Text = t2picks.ElementAtOrDefault(2);
+            c_t2h4.Text = t2picks.ElementAtOrDefault(3);
+            c_t2h5.Text = t2picks.ElementAtOrDefault(4);
             locked = false;
             update();
         }
 
         void MainFormLoad(object sender, EventArgs e) {
-            string herolistfile = Path.Combine(Application.StartupPath, "herolist");
-			if (!File.Exists(herolistfile)) {
-				herolistfile = Path.Combine(Application.StartupPath, "herolist.default");
-			}
-			string[] heroes = File.ReadAllLines(herolistfile, Encoding.UTF8).Select(s => {
-            	s = (string)Regex.Replace(s, "#.*$", "");
-            	return (string)Regex.Replace(s, "\\s", "");
-            }).Where(s => s != "").ToArray();
 
-			foreach (ComboBox c in Controls.OfType<ComboBox>().Where(c => c != c_bg)) {
-				foreach (string heroname in heroes) {
-					c.Items.Add(heroname);
-				}
-				c.TextChanged += cboxChange;
-			}
+            Controls.OfType<ComboBox>().Where(c => c != c_bg).ToList().ForEach(c => {
+                c.Items.AddRange(HeroList.Instance.Heroes);
+                c.TextChanged += cboxChange;
+            });
 
-			foreach (string bgname in new string[] {
-			         "Alterac Pass", "Battlefield of Eternity", "Blackheart's Bay",
-			         "Braxis Holdout", "Cursed Hollow", "Dragon Shire",
-			         "Garden of Terror", "Hanamura Temple", "Haunted Mines",
-			         "Infernal Shrines", "Sky Temple", "Tomb of the Spider Queen",
-			         "Towers of Doom", "Volskaya Foundry", "Warhead Junction"
-			         }) {
-				c_bg.Items.Add(bgname);
-			}
-			c_bg.TextChanged += cboxChange;
+            c_bg.Items.AddRange(new string[] {
+                "Alterac Pass", "Battlefield of Eternity", "Blackheart's Bay",
+                "Braxis Holdout", "Cursed Hollow", "Dragon Shire",
+                "Garden of Terror", "Hanamura Temple", "Haunted Mines",
+                "Infernal Shrines", "Sky Temple", "Tomb of the Spider Queen",
+                "Towers of Doom", "Volskaya Foundry", "Warhead Junction"
+            });
+
+            c_bg.TextChanged += cboxChange;
 			ch_t1w.CheckedChanged += cboxChange;
 			ch_t2w.CheckedChanged += cboxChange;
 			update();

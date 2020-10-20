@@ -107,6 +107,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HeroAddDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HeroAddDialog.Designer.cs">
+      <DependentUpon>HeroAddDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HeroList.cs" />
     <Compile Include="SearchResult.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="ScreenshotViewer.cs">

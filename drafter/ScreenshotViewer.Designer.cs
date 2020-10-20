@@ -34,10 +34,12 @@
             this.MinimizeBox = false;
             this.Name = "ScreenshotViewer";
             this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Screenshot Viewer";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ScreenshotViewer_Closing);
             this.Load += new System.EventHandler(this.ScreenshotViewer_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.ScreenshotViewer_Paint);
+            this.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ScreenshotViewer_MouseClick);
             this.ResumeLayout(false);
 
         }

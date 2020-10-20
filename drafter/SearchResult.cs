@@ -4,7 +4,13 @@ using System.Linq;
 using System.Drawing;
 
 namespace drafter {
-    public struct SearchResult {
+    public class SearchResult {
+
+        public SearchResult(string heroname, RectangleF rect, PointF location) {
+            HeroName = heroname;
+            Rect = rect;
+            Location = location;
+        }
 
         public SearchResult(string heroname, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp) {
             HeroName = heroname.Split('_')[0];
