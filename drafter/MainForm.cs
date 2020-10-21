@@ -331,7 +331,7 @@ namespace drafter {
                 graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
                 graphics.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
 
-                using (var wrapMode = new System.Drawing.Imaging.ImageAttributes()) {
+                using (var wrapMode = new ImageAttributes()) {
                     wrapMode.SetWrapMode(System.Drawing.Drawing2D.WrapMode.TileFlipXY);
                     graphics.DrawImage(image, newRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
                 }
@@ -352,7 +352,7 @@ namespace drafter {
             }
             bitmap.UnlockBits(data);
 
-            var sift = new Emgu.CV.Features2D.SIFT();
+            var sift = new Emgu.CV.Features2D.SIFT(edgeThreshold: 25, sigma: 1.2);
             Emgu.CV.Features2D.DescriptorMatcher matcher;
             var use_bf = true;
             if (use_bf)

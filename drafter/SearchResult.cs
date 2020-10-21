@@ -42,10 +42,10 @@ namespace drafter {
             Rect = new RectangleF(minx, miny, maxx - minx, maxy - miny);
             Location = new PointF(Rect.X + Rect.Width / 2, Rect.Y + Rect.Height / 2);
             Distance = matches.Select(m => (double)1 / m[0].Distance).Sum();
-            if (HeroName == "chromie")
+            /*if (HeroName == "chromie")
                 Distance *= 2;
             else if (HeroName == "greymane")
-                Distance *= 3;
+                Distance *= 3;*/
         }
 
         public string HeroName { get; }

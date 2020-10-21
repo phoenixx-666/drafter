@@ -132,12 +132,15 @@ namespace drafter {
                     PointF pt = searchResult.Location;
                     //g.DrawEllipse(new Pen(clr, 2), pt.X - radius, pt.Y - radius, radius * 2, radius * 2);
                     g.DrawRectangle(new Pen(clr, 4), Rectangle.Round(searchResult.Rect));
+                    var text = searchResult.HeroName;
                     if (debug) {
-                        g.DrawLine(new Pen(clr, 2), pt.X, searchResult.Rect.Top, pt.X, pt.Y);
-                        if (searchResult.MatchPointsRaw != null)
+                        if (searchResult.MatchPointsRaw != null) {
+                            g.DrawLine(new Pen(clr, 2), pt.X, searchResult.Rect.Top, pt.X, pt.Y);
                             searchResult.MatchPointsRaw.ForEach(pt0 => g.DrawLine(new Pen(clr, 2), pt, pt0));
+                            text += string.Format("\npts: {0:d}", searchResult.MatchPointsRaw.Count);
+                        }
                     }
-                    g.DrawString(searchResult.HeroName, font, Brushes.White, pt);
+                    g.DrawString(text, font, Brushes.White, pt);
                 }
             }
 
