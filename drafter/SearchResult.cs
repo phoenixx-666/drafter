@@ -6,14 +6,14 @@ using System.Drawing;
 namespace drafter {
     public class SearchResult {
 
-        public SearchResult(string heroname, RectangleF rect, PointF location) {
-            HeroName = heroname;
+        public SearchResult(string name, RectangleF rect, PointF location) {
+            Name = name;
             Rect = rect;
             Location = location;
         }
 
-        public SearchResult(string heroname, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp) {
-            HeroName = heroname.Split('_')[0];
+        public SearchResult(string name, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp) {
+            Name = name.Split('_')[0];
             Matches = matches.Where(m => m[0].Distance <= matches.Select(m0 => (double)m0[0].Distance).Median()).ToList();
             var nmatches = matches.Count;
             var mp = matches.Select(m => kp[m[0].TrainIdx].Point).ToList();
@@ -48,7 +48,7 @@ namespace drafter {
                 Distance *= 3;*/
         }
 
-        public string HeroName { get; }
+        public string Name { get; }
         public List<Emgu.CV.Structure.MDMatch[]> Matches { get; }
         public List<PointF> MatchPoints { get; }
         public List<PointF> MatchPointsRaw { get; }

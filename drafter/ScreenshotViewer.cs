@@ -12,10 +12,11 @@ namespace drafter {
         SearchResult[] t1picks = new SearchResult[0];
         SearchResult[] t2picks = new SearchResult[0];
         SearchResult[] selection = new SearchResult[0];
+        SearchResult bg = null;
         bool debug = false;
 
         public ScreenshotViewer(MainForm mainForm) {
-            this.ResizeRedraw = true;
+            ResizeRedraw = true;
             this.mainForm = mainForm;
             InitializeComponent();
         }
@@ -29,7 +30,7 @@ namespace drafter {
                     break;
                 case Keys.Delete:
                     if (selection.Any()) {
-                        SetSearchResults(searchResults.Where(res => !selection.Contains(res)).ToArray(), false);
+                        SetSearchResults(searchResults.Where(res => !selection.Contains(res)).ToArray(), activateMainForm: false);
                     } else
                         MessageBox.Show("No search result has been selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     break;
@@ -54,17 +55,21 @@ namespace drafter {
             this.image = image;
             searchResults = new SearchResult[0];
             selection = new SearchResult[0];
+            bg = null;
             UpdateBansPicks();
+            Activate();
         }
 
-        public void SetSearchResults(SearchResult[] searchResults, bool activateMainForm = true) {
+        public void SetSearchResults(SearchResult[] searchResults, SearchResult bg = null, bool activateMainForm = true) {
             this.searchResults = searchResults;
             selection = new SearchResult[0];
+            if (bg != null)
+                this.bg = bg;
             UpdateBansPicks();
             mainForm.SetBansPicks(
-                bans.Select(t => t.HeroName).ToArray(),
-                t1picks.Select(t => t.HeroName).ToArray(),
-                t2picks.Select(t => t.HeroName).ToArray());
+                bans.Select(t => t.Name).ToArray(),
+                t1picks.Select(t => t.Name).ToArray(),
+                t2picks.Select(t => t.Name).ToArray());
             if (activateMainForm)
                 mainForm.Activate();
         }
@@ -99,7 +104,7 @@ namespace drafter {
                             location.X - rectSide, location.Y - rectSide,
                             location.X + rectSide, location.Y + rectSide);
                         var result = new SearchResult(dlg.HeroChoice, rect, location);
-                        SetSearchResults(searchResults.Append(result).OrderBy(t => t.Location.Y).ToArray(), false);
+                        SetSearchResults(searchResults.Append(result).OrderBy(t => t.Location.Y).ToArray(), activateMainForm: false);
                     }
                 }
             }
@@ -116,7 +121,7 @@ namespace drafter {
                 var font = new Font("Courier New", 30, FontStyle.Bold, GraphicsUnit.Pixel);
 
                 //Debug.WriteLine("================");
-                foreach (var searchResult in searchResults) {
+                foreach (var searchResult in bg == null ? searchResults : searchResults.Append(bg)) {
                     //Debug.WriteLine("{0:s} {1:d} {2:f6}", searchResult.HeroName, searchResult.MatchPoints.Count, searchResult.Distance);
                     Color clr;
                     if (selection.Contains(searchResult))
@@ -127,12 +132,14 @@ namespace drafter {
                         clr = Color.Blue;
                     else if (t2picks.Contains(searchResult))
                         clr = Color.Red;
+                    else if (searchResult == bg)
+                        clr = Color.Purple;
                     else
                         continue;
                     PointF pt = searchResult.Location;
                     //g.DrawEllipse(new Pen(clr, 2), pt.X - radius, pt.Y - radius, radius * 2, radius * 2);
                     g.DrawRectangle(new Pen(clr, 4), Rectangle.Round(searchResult.Rect));
-                    var text = searchResult.HeroName;
+                    var text = searchResult.Name;
                     if (debug) {
                         if (searchResult.MatchPointsRaw != null) {
                             g.DrawLine(new Pen(clr, 2), pt.X, searchResult.Rect.Top, pt.X, pt.Y);
