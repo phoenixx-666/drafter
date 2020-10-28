@@ -5,7 +5,7 @@ using System.Windows.Forms;
 
 namespace drafter {
     public partial class ScreenshotViewer : Form {
-        MainForm mainForm;
+        readonly MainForm mainForm;
         Image image;
         SearchResult[] searchResults = new SearchResult[0];
         SearchResult[] bans = new SearchResult[0];
@@ -25,8 +25,7 @@ namespace drafter {
             switch (keyData) {
                 case Keys.F4:
                     debug = !debug;
-                    if (searchResults.Any())
-                        Invalidate();
+                    Invalidate();
                     break;
                 case Keys.Delete:
                     if (selection.Any()) {
@@ -52,6 +51,8 @@ namespace drafter {
         }
 
         public void SetImage(Image image) {
+            if (this.image != null)
+                this.image.Dispose();
             this.image = image;
             searchResults = new SearchResult[0];
             selection = new SearchResult[0];
@@ -119,10 +120,10 @@ namespace drafter {
             using (var g = Graphics.FromImage(image)) {
                 float radius = 0.025f * image.Width;
                 var font = new Font("Courier New", 30, FontStyle.Bold, GraphicsUnit.Pixel);
+                if (debug)
+                    g.DrawString("debug mode on", font, Brushes.LightYellow, Point.Empty);
 
-                //Debug.WriteLine("================");
                 foreach (var searchResult in bg == null ? searchResults : searchResults.Append(bg)) {
-                    //Debug.WriteLine("{0:s} {1:d} {2:f6}", searchResult.HeroName, searchResult.MatchPoints.Count, searchResult.Distance);
                     Color clr;
                     if (selection.Contains(searchResult))
                         clr = Color.White;
@@ -137,7 +138,6 @@ namespace drafter {
                     else
                         continue;
                     PointF pt = searchResult.Location;
-                    //g.DrawEllipse(new Pen(clr, 2), pt.X - radius, pt.Y - radius, radius * 2, radius * 2);
                     g.DrawRectangle(new Pen(clr, 4), Rectangle.Round(searchResult.Rect));
                     var text = searchResult.Name;
                     if (debug) {

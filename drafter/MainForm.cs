@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -23,6 +24,8 @@ namespace drafter {
         int message_duration;
         Dictionary<string, Emgu.CV.Mat> heroDescriptors;
         Dictionary<string, Emgu.CV.Mat> bgnameDescriptors;
+        Emgu.CV.Features2D.SIFT sift;
+        Emgu.CV.Features2D.DescriptorMatcher matcher;
 
         public MainForm() {
             InitializeComponent();
@@ -224,7 +227,7 @@ namespace drafter {
                     dict[key] = val;
             };
 
-            if (dict.Any())
+            if (!dict.Any())
                 return;
 
             locked = true;
@@ -315,6 +318,27 @@ namespace drafter {
             timer.Start();
         }
 
+        Dictionary<string, Emgu.CV.Mat> loadDescriptors(string archivename) {
+            var result = new Dictionary<string, Emgu.CV.Mat>();
+            using (var fstream = new FileStream(archivename, FileMode.Open))
+            using (var archive = new ZipArchive(fstream, ZipArchiveMode.Read)) {
+                foreach (var file in archive.Entries) {
+                    using (var stream = file.Open())
+                    using (var reader = new BinaryReader(stream)) {
+                        var bytes = reader.ReadBytes((int)file.Length);
+                        var des = new Emgu.CV.Mat(bytes.Length / 4 / 128, 128, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
+                        unsafe {
+                            fixed (byte* ptr = bytes) {
+                                Buffer.MemoryCopy(ptr, des.DataPointer.ToPointer(), bytes.Length, bytes.Length);
+                            }
+                        }
+                        result[file.Name] = des;
+                    }
+                }
+            }
+            return result;
+        }
+
         private void Worker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e) {
             Image image = (Image)e.Argument;
             var minSize = new Size(3840, 2160);
@@ -325,110 +349,99 @@ namespace drafter {
             } else
                 newSize = image.Size;
             var newRect = new Rectangle(Point.Empty, newSize);
-            var bitmap = new Bitmap(newSize.Width, newSize.Height, PixelFormat.Format24bppRgb);
+            Emgu.CV.Image<Emgu.CV.Structure.Bgr, byte> cvImage;
+            using (var bitmap = new Bitmap(newSize.Width, newSize.Height, PixelFormat.Format24bppRgb)) {
 
-            using (var graphics = Graphics.FromImage(bitmap)) {
-                graphics.CompositingQuality = CompositingQuality.HighQuality;
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.SmoothingMode = SmoothingMode.HighQuality;
-                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                using (var graphics = Graphics.FromImage(bitmap)) {
+                    graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
-                using (var wrapMode = new ImageAttributes()) {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, newRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                    using (var wrapMode = new ImageAttributes()) {
+                        wrapMode.SetWrapMode(WrapMode.TileFlipXY);
+                        graphics.DrawImage(image, newRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                    }
                 }
+
+                Invoke(new Action(() => {
+                    if (screenshotViewer == null)
+                        screenshotViewer = new ScreenshotViewer(this) { Top = Top, Left = Right };
+                    screenshotViewer.SetImage(new Bitmap(bitmap));
+                    screenshotViewer.Show();
+                }));
+
+                var data = bitmap.LockBits(newRect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
+                var nBytes = data.Stride * data.Height;
+                cvImage = new Emgu.CV.Image<Emgu.CV.Structure.Bgr, byte>(newSize);
+                unsafe {
+                    Buffer.MemoryCopy(data.Scan0.ToPointer(), cvImage.Mat.DataPointer.ToPointer(), nBytes, nBytes);
+                }
+                bitmap.UnlockBits(data);
             }
 
-            Invoke(new Action(() => {
-                if (screenshotViewer == null)
-                    screenshotViewer = new ScreenshotViewer(this) { Top = Top, Left = Right };
-                screenshotViewer.SetImage(new Bitmap(bitmap));
-                screenshotViewer.Show();
-            }));
-
-            var data = bitmap.LockBits(newRect, ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-            var nBytes = data.Stride * data.Height;
-            var cvImage = new Emgu.CV.Image<Emgu.CV.Structure.Bgr, byte>(newSize);
-            unsafe {
-                Buffer.MemoryCopy(data.Scan0.ToPointer(), cvImage.Mat.DataPointer.ToPointer(), nBytes, nBytes);
+            if (sift == null)
+                sift = new Emgu.CV.Features2D.SIFT(edgeThreshold: 25, sigma: 1.2);
+            if (matcher == null) {
+                var use_bf = true;
+                if (use_bf)
+                    matcher = new Emgu.CV.Features2D.BFMatcher(Emgu.CV.Features2D.DistanceType.L2);
+                else
+                    matcher = new Emgu.CV.Features2D.FlannBasedMatcher(new Emgu.CV.Flann.KdTreeIndexParams(5), new Emgu.CV.Flann.SearchParams());
             }
-            bitmap.UnlockBits(data);
-
-            var sift = new Emgu.CV.Features2D.SIFT(edgeThreshold: 25, sigma: 1.2);
-            Emgu.CV.Features2D.DescriptorMatcher matcher;
-            var use_bf = true;
-            if (use_bf)
-                matcher = new Emgu.CV.Features2D.BFMatcher(Emgu.CV.Features2D.DistanceType.L2);
-            else
-                matcher = new Emgu.CV.Features2D.FlannBasedMatcher(new Emgu.CV.Flann.KdTreeIndexParams(5), new Emgu.CV.Flann.SearchParams());
-
-            Emgu.CV.Util.VectorOfKeyPoint kp;
-            Emgu.CV.Mat des;
 
             if (heroDescriptors == null) {
-                heroDescriptors = new Dictionary<string, Emgu.CV.Mat>();
-                foreach (var filename in Directory.GetFiles("portraits", "*.png")) {
-                    var portrait = new Emgu.CV.Image<Emgu.CV.Structure.Bgra, byte>(filename);
-                    var heroname = Path.GetFileNameWithoutExtension(filename);
-                    kp = new Emgu.CV.Util.VectorOfKeyPoint();
-                    des = new Emgu.CV.Mat();
-                    sift.DetectAndCompute(portrait, null, kp, des, false);
-                    heroDescriptors[heroname] = des;
-                }
+                heroDescriptors = loadDescriptors("portraits.zip");
             }
 
             if (bgnameDescriptors == null) {
-                bgnameDescriptors = new Dictionary<string, Emgu.CV.Mat>();
-                foreach (var filename in Directory.GetFiles("bgnames", "*.png")) {
-                    var bgnamepic = new Emgu.CV.Image<Emgu.CV.Structure.Gray, byte>(filename);
-                    var bgname = Path.GetFileNameWithoutExtension(filename);
-                    kp = new Emgu.CV.Util.VectorOfKeyPoint();
-                    des = new Emgu.CV.Mat();
-                    sift.DetectAndCompute(bgnamepic, null, kp, des, false);
-                    bgnameDescriptors[bgname] = des;
+                bgnameDescriptors = loadDescriptors("bgnames.zip");
+            }
+
+            using (var kp = new Emgu.CV.Util.VectorOfKeyPoint())
+            using (var des = new Emgu.CV.Mat()) {
+                sift.DetectAndCompute(cvImage, null, kp, des, false);
+                cvImage.Dispose();
+
+                var searchResults = new List<SearchResult>();
+                foreach (var kvp in heroDescriptors) {
+                    using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
+                        matcher.KnnMatch(kvp.Value, des, vMatches, 2);
+                        const float maxdist = 0.7f;
+                        var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
+                        if (matches.Any())
+                            searchResults.Add(new SearchResult(kvp.Key, matches, kp));
+                    }
                 }
+                searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
+                searchResults.RemoveAll(t => searchResults.Take(searchResults.IndexOf(t)).Select(u => u.Name).Contains(t.Name));
+                var bans_picks = searchResults.Take(16).OrderBy(t => t.Location.Y).ToList();
+                var bans = bans_picks.Take(6).OrderBy(t => t.Location.X).ToList();
+                var picks = bans_picks.Skip(6).OrderBy(t => t.Location.X).ToList();
+                var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
+                var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
+
+                var bgSearchResults = new Dictionary<string, int>();
+                SearchResult bgSearchResult = null;
+                foreach (var kvp in bgnameDescriptors) {
+                    using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
+                        matcher.KnnMatch(kvp.Value, des, vMatches, 2);
+                        const float maxdist = 0.7f;
+                        var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
+                        if (bgSearchResult == null || matches.Count > bgSearchResult.Matches.Count)
+                            bgSearchResult = new SearchResult(kvp.Key, matches, kp);
+                    }
+                }
+
+                Invoke(new Action(() => {
+                    if (screenshotViewer == null)
+                        screenshotViewer = new ScreenshotViewer(this);
+                    screenshotViewer.SetSearchResults(bans_picks.ToArray(), bgSearchResult);
+                    c_bg.Text = bgSearchResult.Name;
+                    screenshotViewer.Show();
+                    Focus();
+                }));
             }
-
-            kp = new Emgu.CV.Util.VectorOfKeyPoint();
-            des = new Emgu.CV.Mat();
-            sift.DetectAndCompute(cvImage, null, kp, des, false);
-
-            var searchResults = new List<SearchResult>();
-            foreach (var kvp in heroDescriptors) {
-                var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch();
-                matcher.KnnMatch(kvp.Value, des, vMatches, 2);
-                const float maxdist = 0.7f;
-                var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
-                if (matches.Any())
-                    searchResults.Add(new SearchResult(kvp.Key, matches, kp));
-            }
-            searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
-            searchResults.RemoveAll(t => searchResults.Take(searchResults.IndexOf(t)).Select(u => u.Name).Contains(t.Name));
-            var bans_picks = searchResults.Take(16).OrderBy(t => t.Location.Y).ToList();
-            var bans = bans_picks.Take(6).OrderBy(t => t.Location.X).ToList();
-            var picks = bans_picks.Skip(6).OrderBy(t => t.Location.X).ToList();
-            var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
-            var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
-
-            var bgSearchResults = new Dictionary<string, int>();
-            SearchResult bgSearchResult = null;
-            foreach (var kvp in bgnameDescriptors) {
-                var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch();
-                matcher.KnnMatch(kvp.Value, des, vMatches, 2);
-                const float maxdist = 0.7f;
-                var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
-                if (bgSearchResult == null || matches.Count > bgSearchResult.Matches.Count)
-                    bgSearchResult = new SearchResult(kvp.Key, matches, kp);
-            }
-
-            Invoke(new Action(() => {
-                if (screenshotViewer == null)
-                    screenshotViewer = new ScreenshotViewer(this);
-                screenshotViewer.SetSearchResults(bans_picks.ToArray(), bgSearchResult);
-                c_bg.Text = bgSearchResult.Name;
-                screenshotViewer.Show();
-                Focus();
-            }));
         }
 
         public void SetBansPicks(string[] bans, string[] t1picks, string[] t2picks) {

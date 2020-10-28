@@ -23,10 +23,6 @@ namespace drafter {
                 bOK.PerformClick();
         }
 
-        private void CbAddHero_TextChanged(object sender, EventArgs e) {
-            bOK.Enabled = cbAddHero.Text.Length > 0;
-        }
-
         public string HeroChoice { get => cbAddHero.Text; }
     }
 }

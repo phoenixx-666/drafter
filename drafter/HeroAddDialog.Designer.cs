@@ -37,13 +37,11 @@
             this.cbAddHero.Name = "cbAddHero";
             this.cbAddHero.Size = new System.Drawing.Size(180, 21);
             this.cbAddHero.TabIndex = 0;
-            this.cbAddHero.TextChanged += new System.EventHandler(this.CbAddHero_TextChanged);
             this.cbAddHero.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CbAddHero_KeyPress);
             // 
             // bOK
             // 
             this.bOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.bOK.Enabled = false;
             this.bOK.Location = new System.Drawing.Point(26, 39);
             this.bOK.Name = "bOK";
             this.bOK.Size = new System.Drawing.Size(80, 24);
