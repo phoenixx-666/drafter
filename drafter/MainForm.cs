@@ -227,7 +227,7 @@ namespace drafter {
                     dict[key] = val;
             };
 
-            if (!dict.Any())
+            if (dict.Any())
                 return;
 
             locked = true;
@@ -421,18 +421,18 @@ namespace drafter {
                 var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
                 var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
 
-                var bgSearchResults = new Dictionary<string, int>();
-                SearchResult bgSearchResult = null;
+                var bgSearchResults = new List<SearchResult>();
                 foreach (var kvp in bgnameDescriptors) {
                     using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
                         matcher.KnnMatch(kvp.Value, des, vMatches, 2);
                         const float maxdist = 0.7f;
                         var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
-                        if (bgSearchResult == null || matches.Count > bgSearchResult.Matches.Count)
-                            bgSearchResult = new SearchResult(kvp.Key, matches, kp);
+                        if (matches.Any()) {
+                            bgSearchResults.Add(new SearchResult(kvp.Key, matches, kp));
+                        }
                     }
                 }
-
+                var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance / t.Name.Length).First();
                 Invoke(new Action(() => {
                     if (screenshotViewer == null)
                         screenshotViewer = new ScreenshotViewer(this);
