@@ -138,6 +138,7 @@ namespace drafter {
                     else
                         continue;
                     PointF pt = searchResult.Location;
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(127, clr)), searchResult.Rect);
                     g.DrawRectangle(new Pen(clr, 4), Rectangle.Round(searchResult.Rect));
                     var text = searchResult.Name;
                     if (debug) {
