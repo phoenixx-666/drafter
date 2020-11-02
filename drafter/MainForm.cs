@@ -223,19 +223,25 @@ namespace drafter {
                 if (keyval.Length != 2)
                     continue;
                 string key = keyval[0].Trim(), val = keyval[1].Trim();
-                if (parserRe.Match(key).Success && val.Length != 0)
+                if (parserRe.Match(key).Success)
                     dict[key] = val;
             };
 
-            if (dict.Any())
+            if (!dict.Any()) {
+                MessageBox.Show(
+                    "The clipboard does not contain any related data.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
 
             locked = true;
             foreach (ComboBox c in Controls.OfType<ComboBox>().Where(c => c != c_bg)) {
                 string key = c.Name.Substring(2);
-                c.Text = dict.ContainsKey(key) ? dict[key] : c.Text;
+                if (dict.ContainsKey(key))
+                    c.Text = dict[key];
             }
-            c_bg.Text = dict.ContainsKey("battleground") ? dict["battleground"] : c_bg.Text;
+            if (dict.ContainsKey("battleground"))
+                c_bg.Text = dict["battleground"];
             if (dict.ContainsKey("win")) {
                 string winner = dict["win"];
                 ch_t1w.Checked = winner == "1";
@@ -246,8 +252,13 @@ namespace drafter {
         }
 
         void tryPaste(Image image) {
-            if (worker.IsBusy)
+            if (worker.IsBusy) {
+                MessageBox.Show(
+                    "The program is already processing an image parsing task. " +
+                    "In order to initiate a new task, you must wait until the current one finishes.",
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
             worker.RunWorkerAsync(image);
         }
 
@@ -432,7 +443,7 @@ namespace drafter {
                         }
                     }
                 }
-                var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance / t.Name.Length).First();
+                var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance).First();
                 Invoke(new Action(() => {
                     if (screenshotViewer == null)
                         screenshotViewer = new ScreenshotViewer(this);
@@ -501,6 +512,10 @@ namespace drafter {
 		void BCopyClick(object sender, EventArgs e) {
 			copy(true);
 		}
+
+        void BPaste_Click(object sender, EventArgs e) {
+            paste();
+        }
 
         void BClearClick(object sender, EventArgs e) {
             clear();

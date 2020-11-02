@@ -133,9 +133,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="HeroAddDialog.resx">
-      <DependentUpon>HeroAddDialog.cs</DependentUpon>
-    </EmbeddedResource>
     <None Include="app.config" />
     <EmbeddedResource Include="drafter.ico" />
     <Content Include="herolist.default">

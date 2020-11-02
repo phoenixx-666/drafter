@@ -26,6 +26,7 @@
 		private void InitializeComponent() {
             this.bClear = new System.Windows.Forms.Button();
             this.bCopy = new System.Windows.Forms.Button();
+            this.bPaste = new System.Windows.Forms.Button();
             this.bSwap = new System.Windows.Forms.Button();
             this.c_bg = new System.Windows.Forms.ComboBox();
             this.c_t1b1 = new System.Windows.Forms.ComboBox();
@@ -47,6 +48,9 @@
             this.ch_t1w = new System.Windows.Forms.CheckBox();
             this.ch_t2w = new System.Windows.Forms.CheckBox();
             this.gbTabOrder = new System.Windows.Forms.GroupBox();
+            this.rbFPRight = new System.Windows.Forms.RadioButton();
+            this.rbFPLeft = new System.Windows.Forms.RadioButton();
+            this.rbSimple = new System.Windows.Forms.RadioButton();
             this.l_bg = new System.Windows.Forms.Label();
             this.l_t1b1 = new System.Windows.Forms.Label();
             this.l_t1b2 = new System.Windows.Forms.Label();
@@ -64,11 +68,9 @@
             this.l_t2h3 = new System.Windows.Forms.Label();
             this.l_t2h4 = new System.Windows.Forms.Label();
             this.l_t2h5 = new System.Windows.Forms.Label();
-            this.rbFPLeft = new System.Windows.Forms.RadioButton();
-            this.rbFPRight = new System.Windows.Forms.RadioButton();
-            this.rbSimple = new System.Windows.Forms.RadioButton();
             this.l_indication = new System.Windows.Forms.Label();
             this.tResult = new System.Windows.Forms.TextBox();
+            this.worker = new System.ComponentModel.BackgroundWorker();
             this.gbTabOrder.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -92,9 +94,19 @@
             this.bCopy.UseVisualStyleBackColor = true;
             this.bCopy.Click += new System.EventHandler(this.BCopyClick);
             // 
+            // bPaste
+            // 
+            this.bPaste.Location = new System.Drawing.Point(224, 136);
+            this.bPaste.Name = "bPaste";
+            this.bPaste.Size = new System.Drawing.Size(104, 32);
+            this.bPaste.TabIndex = 206;
+            this.bPaste.Text = "Paste Clipboard";
+            this.bPaste.UseVisualStyleBackColor = true;
+            this.bPaste.Click += new System.EventHandler(this.BPaste_Click);
+            // 
             // bSwap
             // 
-            this.bSwap.Location = new System.Drawing.Point(224, 120);
+            this.bSwap.Location = new System.Drawing.Point(224, 96);
             this.bSwap.Name = "bSwap";
             this.bSwap.Size = new System.Drawing.Size(104, 32);
             this.bSwap.TabIndex = 202;
@@ -112,6 +124,17 @@
             this.c_bg.Size = new System.Drawing.Size(160, 21);
             this.c_bg.Sorted = true;
             this.c_bg.TabIndex = 120;
+            // 
+            // c_t1b1
+            // 
+            this.c_t1b1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.c_t1b1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.c_t1b1.FormattingEnabled = true;
+            this.c_t1b1.Location = new System.Drawing.Point(8, 32);
+            this.c_t1b1.Name = "c_t1b1";
+            this.c_t1b1.Size = new System.Drawing.Size(80, 21);
+            this.c_t1b1.Sorted = true;
+            this.c_t1b1.TabIndex = 100;
             // 
             // c_t1b2
             // 
@@ -134,6 +157,17 @@
             this.c_t1b3.Size = new System.Drawing.Size(80, 21);
             this.c_t1b3.Sorted = true;
             this.c_t1b3.TabIndex = 102;
+            // 
+            // c_t1h1
+            // 
+            this.c_t1h1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.c_t1h1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.c_t1h1.FormattingEnabled = true;
+            this.c_t1h1.Location = new System.Drawing.Point(48, 64);
+            this.c_t1h1.Name = "c_t1h1";
+            this.c_t1h1.Size = new System.Drawing.Size(120, 21);
+            this.c_t1h1.Sorted = true;
+            this.c_t1h1.TabIndex = 106;
             // 
             // c_t1h2
             // 
@@ -178,6 +212,39 @@
             this.c_t1h5.Size = new System.Drawing.Size(120, 21);
             this.c_t1h5.Sorted = true;
             this.c_t1h5.TabIndex = 110;
+            // 
+            // c_t2b1
+            // 
+            this.c_t2b1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.c_t2b1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.c_t2b1.FormattingEnabled = true;
+            this.c_t2b1.Location = new System.Drawing.Point(304, 32);
+            this.c_t2b1.Name = "c_t2b1";
+            this.c_t2b1.Size = new System.Drawing.Size(80, 21);
+            this.c_t2b1.Sorted = true;
+            this.c_t2b1.TabIndex = 103;
+            // 
+            // c_t2b2
+            // 
+            this.c_t2b2.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.c_t2b2.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.c_t2b2.FormattingEnabled = true;
+            this.c_t2b2.Location = new System.Drawing.Point(392, 32);
+            this.c_t2b2.Name = "c_t2b2";
+            this.c_t2b2.Size = new System.Drawing.Size(80, 21);
+            this.c_t2b2.Sorted = true;
+            this.c_t2b2.TabIndex = 104;
+            // 
+            // c_t2b3
+            // 
+            this.c_t2b3.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.c_t2b3.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
+            this.c_t2b3.FormattingEnabled = true;
+            this.c_t2b3.Location = new System.Drawing.Point(480, 32);
+            this.c_t2b3.Name = "c_t2b3";
+            this.c_t2b3.Size = new System.Drawing.Size(80, 21);
+            this.c_t2b3.Sorted = true;
+            this.c_t2b3.TabIndex = 105;
             // 
             // c_t2h1
             // 
@@ -303,153 +370,6 @@
             this.l_bg.TabIndex = 204;
             this.l_bg.Text = "Battleground";
             // 
-            // l_t1h1
-            // 
-            this.l_t1h1.Location = new System.Drawing.Point(8, 64);
-            this.l_t1h1.Name = "l_t1h1";
-            this.l_t1h1.Size = new System.Drawing.Size(40, 16);
-            this.l_t1h1.TabIndex = 12;
-            this.l_t1h1.Text = "Pick 1";
-            // 
-            // l_t1h2
-            // 
-            this.l_t1h2.Location = new System.Drawing.Point(32, 96);
-            this.l_t1h2.Name = "l_t1h2";
-            this.l_t1h2.Size = new System.Drawing.Size(40, 16);
-            this.l_t1h2.TabIndex = 14;
-            this.l_t1h2.Text = "Pick 2";
-            // 
-            // l_t1h3
-            // 
-            this.l_t1h3.Location = new System.Drawing.Point(8, 128);
-            this.l_t1h3.Name = "l_t1h3";
-            this.l_t1h3.Size = new System.Drawing.Size(40, 16);
-            this.l_t1h3.TabIndex = 16;
-            this.l_t1h3.Text = "Pick 3";
-            // 
-            // l_t1h4
-            // 
-            this.l_t1h4.Location = new System.Drawing.Point(32, 160);
-            this.l_t1h4.Name = "l_t1h4";
-            this.l_t1h4.Size = new System.Drawing.Size(40, 16);
-            this.l_t1h4.TabIndex = 18;
-            this.l_t1h4.Text = "Pick 4";
-            // 
-            // l_t1h5
-            // 
-            this.l_t1h5.Location = new System.Drawing.Point(8, 192);
-            this.l_t1h5.Name = "l_t1h5";
-            this.l_t1h5.Size = new System.Drawing.Size(40, 16);
-            this.l_t1h5.TabIndex = 20;
-            this.l_t1h5.Text = "Pick 5";
-            // 
-            // l_t2h1
-            // 
-            this.l_t2h1.Location = new System.Drawing.Point(520, 64);
-            this.l_t2h1.Name = "l_t2h1";
-            this.l_t2h1.Size = new System.Drawing.Size(40, 16);
-            this.l_t2h1.TabIndex = 12;
-            this.l_t2h1.Text = "Pick 1";
-            // 
-            // l_t2h2
-            // 
-            this.l_t2h2.Location = new System.Drawing.Point(496, 96);
-            this.l_t2h2.Name = "l_t2h2";
-            this.l_t2h2.Size = new System.Drawing.Size(40, 16);
-            this.l_t2h2.TabIndex = 14;
-            this.l_t2h2.Text = "Pick 2";
-            // 
-            // l_t2h3
-            // 
-            this.l_t2h3.Location = new System.Drawing.Point(520, 128);
-            this.l_t2h3.Name = "l_t2h3";
-            this.l_t2h3.Size = new System.Drawing.Size(40, 16);
-            this.l_t2h3.TabIndex = 16;
-            this.l_t2h3.Text = "Pick 3";
-            // 
-            // l_t2h4
-            // 
-            this.l_t2h4.Location = new System.Drawing.Point(496, 160);
-            this.l_t2h4.Name = "l_t2h4";
-            this.l_t2h4.Size = new System.Drawing.Size(40, 16);
-            this.l_t2h4.TabIndex = 18;
-            this.l_t2h4.Text = "Pick 4";
-            // 
-            // l_t2h5
-            // 
-            this.l_t2h5.Location = new System.Drawing.Point(520, 192);
-            this.l_t2h5.Name = "l_t2h5";
-            this.l_t2h5.Size = new System.Drawing.Size(40, 16);
-            this.l_t2h5.TabIndex = 20;
-            this.l_t2h5.Text = "Pick 5";
-            // 
-            // tResult
-            // 
-            this.tResult.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.tResult.Location = new System.Drawing.Point(8, 224);
-            this.tResult.Multiline = true;
-            this.tResult.Name = "tResult";
-            this.tResult.ReadOnly = true;
-            this.tResult.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
-            this.tResult.Size = new System.Drawing.Size(552, 84);
-            this.tResult.TabIndex = 19;
-            this.tResult.GotFocus += new System.EventHandler(this.TResultGotFocus);
-            // 
-            // c_t1b1
-            // 
-            this.c_t1b1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.c_t1b1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.c_t1b1.FormattingEnabled = true;
-            this.c_t1b1.Location = new System.Drawing.Point(8, 32);
-            this.c_t1b1.Name = "c_t1b1";
-            this.c_t1b1.Size = new System.Drawing.Size(80, 21);
-            this.c_t1b1.Sorted = true;
-            this.c_t1b1.TabIndex = 100;
-            // 
-            // c_t1h1
-            // 
-            this.c_t1h1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.c_t1h1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.c_t1h1.FormattingEnabled = true;
-            this.c_t1h1.Location = new System.Drawing.Point(48, 64);
-            this.c_t1h1.Name = "c_t1h1";
-            this.c_t1h1.Size = new System.Drawing.Size(120, 21);
-            this.c_t1h1.Sorted = true;
-            this.c_t1h1.TabIndex = 106;
-            // 
-            // c_t2b1
-            // 
-            this.c_t2b1.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.c_t2b1.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.c_t2b1.FormattingEnabled = true;
-            this.c_t2b1.Location = new System.Drawing.Point(304, 32);
-            this.c_t2b1.Name = "c_t2b1";
-            this.c_t2b1.Size = new System.Drawing.Size(80, 21);
-            this.c_t2b1.Sorted = true;
-            this.c_t2b1.TabIndex = 103;
-            // 
-            // c_t2b2
-            // 
-            this.c_t2b2.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.c_t2b2.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.c_t2b2.FormattingEnabled = true;
-            this.c_t2b2.Location = new System.Drawing.Point(392, 32);
-            this.c_t2b2.Name = "c_t2b2";
-            this.c_t2b2.Size = new System.Drawing.Size(80, 21);
-            this.c_t2b2.Sorted = true;
-            this.c_t2b2.TabIndex = 104;
-            // 
-            // c_t2b3
-            // 
-            this.c_t2b3.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.c_t2b3.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
-            this.c_t2b3.FormattingEnabled = true;
-            this.c_t2b3.Location = new System.Drawing.Point(480, 32);
-            this.c_t2b3.Name = "c_t2b3";
-            this.c_t2b3.Size = new System.Drawing.Size(80, 21);
-            this.c_t2b3.Sorted = true;
-            this.c_t2b3.TabIndex = 105;
-            // 
             // l_t1b1
             // 
             this.l_t1b1.Location = new System.Drawing.Point(8, 16);
@@ -473,6 +393,51 @@
             this.l_t1b3.Size = new System.Drawing.Size(80, 16);
             this.l_t1b3.TabIndex = 7;
             this.l_t1b3.Text = "Ban 3";
+            // 
+            // l_t1h1
+            // 
+            this.l_t1h1.Location = new System.Drawing.Point(8, 64);
+            this.l_t1h1.Name = "l_t1h1";
+            this.l_t1h1.Size = new System.Drawing.Size(40, 21);
+            this.l_t1h1.TabIndex = 12;
+            this.l_t1h1.Text = "Pick 1";
+            this.l_t1h1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t1h2
+            // 
+            this.l_t1h2.Location = new System.Drawing.Point(32, 96);
+            this.l_t1h2.Name = "l_t1h2";
+            this.l_t1h2.Size = new System.Drawing.Size(40, 21);
+            this.l_t1h2.TabIndex = 14;
+            this.l_t1h2.Text = "Pick 2";
+            this.l_t1h2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t1h3
+            // 
+            this.l_t1h3.Location = new System.Drawing.Point(8, 128);
+            this.l_t1h3.Name = "l_t1h3";
+            this.l_t1h3.Size = new System.Drawing.Size(40, 21);
+            this.l_t1h3.TabIndex = 16;
+            this.l_t1h3.Text = "Pick 3";
+            this.l_t1h3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t1h4
+            // 
+            this.l_t1h4.Location = new System.Drawing.Point(32, 160);
+            this.l_t1h4.Name = "l_t1h4";
+            this.l_t1h4.Size = new System.Drawing.Size(40, 21);
+            this.l_t1h4.TabIndex = 18;
+            this.l_t1h4.Text = "Pick 4";
+            this.l_t1h4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t1h5
+            // 
+            this.l_t1h5.Location = new System.Drawing.Point(8, 192);
+            this.l_t1h5.Name = "l_t1h5";
+            this.l_t1h5.Size = new System.Drawing.Size(40, 21);
+            this.l_t1h5.TabIndex = 20;
+            this.l_t1h5.Text = "Pick 5";
+            this.l_t1h5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // l_t2b1
             // 
@@ -498,6 +463,51 @@
             this.l_t2b3.TabIndex = 10;
             this.l_t2b3.Text = "Ban 3";
             // 
+            // l_t2h1
+            // 
+            this.l_t2h1.Location = new System.Drawing.Point(520, 64);
+            this.l_t2h1.Name = "l_t2h1";
+            this.l_t2h1.Size = new System.Drawing.Size(40, 21);
+            this.l_t2h1.TabIndex = 12;
+            this.l_t2h1.Text = "Pick 1";
+            this.l_t2h1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t2h2
+            // 
+            this.l_t2h2.Location = new System.Drawing.Point(496, 96);
+            this.l_t2h2.Name = "l_t2h2";
+            this.l_t2h2.Size = new System.Drawing.Size(40, 21);
+            this.l_t2h2.TabIndex = 14;
+            this.l_t2h2.Text = "Pick 2";
+            this.l_t2h2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t2h3
+            // 
+            this.l_t2h3.Location = new System.Drawing.Point(520, 128);
+            this.l_t2h3.Name = "l_t2h3";
+            this.l_t2h3.Size = new System.Drawing.Size(40, 21);
+            this.l_t2h3.TabIndex = 16;
+            this.l_t2h3.Text = "Pick 3";
+            this.l_t2h3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t2h4
+            // 
+            this.l_t2h4.Location = new System.Drawing.Point(496, 160);
+            this.l_t2h4.Name = "l_t2h4";
+            this.l_t2h4.Size = new System.Drawing.Size(40, 21);
+            this.l_t2h4.TabIndex = 18;
+            this.l_t2h4.Text = "Pick 4";
+            this.l_t2h4.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // l_t2h5
+            // 
+            this.l_t2h5.Location = new System.Drawing.Point(520, 192);
+            this.l_t2h5.Name = "l_t2h5";
+            this.l_t2h5.Size = new System.Drawing.Size(40, 21);
+            this.l_t2h5.TabIndex = 20;
+            this.l_t2h5.Text = "Pick 5";
+            this.l_t2h5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // l_indication
             // 
             this.l_indication.Location = new System.Drawing.Point(181, 64);
@@ -507,10 +517,21 @@
             this.l_indication.Text = "Indication";
             this.l_indication.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.l_indication.Visible = false;
-            //
+            // 
+            // tResult
+            // 
+            this.tResult.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.tResult.Location = new System.Drawing.Point(8, 224);
+            this.tResult.Multiline = true;
+            this.tResult.Name = "tResult";
+            this.tResult.ReadOnly = true;
+            this.tResult.ScrollBars = System.Windows.Forms.ScrollBars.Horizontal;
+            this.tResult.Size = new System.Drawing.Size(552, 84);
+            this.tResult.TabIndex = 19;
+            this.tResult.GotFocus += new System.EventHandler(this.TResultGotFocus);
+            // 
             // worker
-            //
-            this.worker = new System.ComponentModel.BackgroundWorker();
+            // 
             this.worker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Worker_DoWork);
             // 
             // MainForm
@@ -525,6 +546,7 @@
             this.Controls.Add(this.gbTabOrder);
             this.Controls.Add(this.bClear);
             this.Controls.Add(this.bCopy);
+            this.Controls.Add(this.bPaste);
             this.Controls.Add(this.bSwap);
             this.Controls.Add(this.tResult);
             this.Controls.Add(this.l_t2h5);
@@ -581,8 +603,9 @@
 		private System.Windows.Forms.GroupBox gbTabOrder;
 		private System.Windows.Forms.Button bClear;
 		private System.Windows.Forms.Button bCopy;
-		private System.Windows.Forms.Button bSwap;
-		private System.Windows.Forms.TextBox tResult;
+        private System.Windows.Forms.Button bPaste;
+        private System.Windows.Forms.Button bSwap;
+        private System.Windows.Forms.TextBox tResult;
 		private System.Windows.Forms.Label l_t2h5;
 		private System.Windows.Forms.ComboBox c_t2h5;
 		private System.Windows.Forms.Label l_t2h4;
