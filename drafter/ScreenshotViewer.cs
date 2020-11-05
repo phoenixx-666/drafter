@@ -51,6 +51,7 @@ namespace drafter {
         }
 
         public void SetImage(Image image) {
+            Text = "Screenshot Viewer";
             if (this.image != null)
                 this.image.Dispose();
             this.image = image;

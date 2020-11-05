@@ -192,6 +192,9 @@
     <Content Include="portraits\deathwing.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="portraits\deathwing_2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="portraits\deckard.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

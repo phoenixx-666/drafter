@@ -329,7 +329,7 @@ namespace drafter {
             timer.Start();
         }
 
-        Dictionary<string, Emgu.CV.Mat> loadDescriptors(string archivename) {
+        static Dictionary<string, Emgu.CV.Mat> loadDescriptors(string archivename) {
             var result = new Dictionary<string, Emgu.CV.Mat>();
             using (var fstream = new FileStream(archivename, FileMode.Open))
             using (var archive = new ZipArchive(fstream, ZipArchiveMode.Read)) {
@@ -402,19 +402,27 @@ namespace drafter {
             }
 
             if (heroDescriptors == null) {
+                Invoke(new Action(() => {
+                    screenshotViewer.Text = "Screenshot Viewer [Loading data...]";
+                }));
                 heroDescriptors = loadDescriptors("portraits.zip");
-            }
-
-            if (bgnameDescriptors == null) {
                 bgnameDescriptors = loadDescriptors("bgnames.zip");
             }
 
+            int nTotal = heroDescriptors.Count + bgnameDescriptors.Count;
+            int nCurrent = 0;
             using (var kp = new Emgu.CV.Util.VectorOfKeyPoint())
             using (var des = new Emgu.CV.Mat()) {
+                Invoke(new Action(() => {
+                    screenshotViewer.Text = "Screenshot Viewer [Processing image...]";
+                }));
                 sift.DetectAndCompute(cvImage, null, kp, des, false);
                 cvImage.Dispose();
 
                 var searchResults = new List<SearchResult>();
+                Invoke(new Action(() => {
+                    screenshotViewer.Text = "Screenshot Viewer [Processing image (0%)...]";
+                }));
                 foreach (var kvp in heroDescriptors) {
                     using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
                         matcher.KnnMatch(kvp.Value, des, vMatches, 2);
@@ -423,6 +431,10 @@ namespace drafter {
                         if (matches.Any())
                             searchResults.Add(new SearchResult(kvp.Key, matches, kp));
                     }
+                    nCurrent++;
+                    Invoke(new Action(() => {
+                        screenshotViewer.Text = string.Format("Screenshot Viewer [Processing image ({0:d}%)...]", nCurrent * 100 / nTotal);
+                    }));
                 }
                 searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
                 searchResults.RemoveAll(t => searchResults.Take(searchResults.IndexOf(t)).Select(u => u.Name).Contains(t.Name));
@@ -442,11 +454,14 @@ namespace drafter {
                             bgSearchResults.Add(new SearchResult(kvp.Key, matches, kp));
                         }
                     }
+                    nCurrent++;
+                    Invoke(new Action(() => {
+                        screenshotViewer.Text = string.Format("Screenshot Viewer [Processing image ({0:d}%)...]", nCurrent * 100 / nTotal);
+                    }));
                 }
                 var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance).First();
                 Invoke(new Action(() => {
-                    if (screenshotViewer == null)
-                        screenshotViewer = new ScreenshotViewer(this);
+                    screenshotViewer.Text = "Screenshot Viewer";
                     screenshotViewer.SetSearchResults(bans_picks.ToArray(), bgSearchResult);
                     c_bg.Text = bgSearchResult.Name;
                     screenshotViewer.Show();
