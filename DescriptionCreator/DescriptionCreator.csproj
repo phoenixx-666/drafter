@@ -243,6 +243,9 @@
     <Content Include="portraits\hanzo.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="portraits\hogger.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="portraits\illidan.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
