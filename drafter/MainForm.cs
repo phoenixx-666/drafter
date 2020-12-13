@@ -403,7 +403,7 @@ namespace drafter {
 
             if (heroDescriptors == null) {
                 Invoke(new Action(() => {
-                    screenshotViewer.Text = "Screenshot Viewer [Loading data...]";
+                    screenshotViewer.SetProgress(Stage.LoadingData);
                 }));
                 heroDescriptors = loadDescriptors("portraits.zip");
                 bgnameDescriptors = loadDescriptors("bgnames.zip");
@@ -414,14 +414,14 @@ namespace drafter {
             using (var kp = new Emgu.CV.Util.VectorOfKeyPoint())
             using (var des = new Emgu.CV.Mat()) {
                 Invoke(new Action(() => {
-                    screenshotViewer.Text = "Screenshot Viewer [Processing image...]";
+                    screenshotViewer.SetProgress(Stage.ProcessingImage);
                 }));
                 sift.DetectAndCompute(cvImage, null, kp, des, false);
                 cvImage.Dispose();
 
                 var searchResults = new List<SearchResult>();
                 Invoke(new Action(() => {
-                    screenshotViewer.Text = "Screenshot Viewer [Processing image (0%)...]";
+                    screenshotViewer.SetProgress(0.0);
                 }));
                 foreach (var kvp in heroDescriptors) {
                     using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
@@ -433,7 +433,7 @@ namespace drafter {
                     }
                     nCurrent++;
                     Invoke(new Action(() => {
-                        screenshotViewer.Text = string.Format("Screenshot Viewer [Processing image ({0:d}%)...]", nCurrent * 100 / nTotal);
+                        screenshotViewer.SetProgress((double)nCurrent / nTotal);
                     }));
                 }
                 searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
@@ -456,12 +456,12 @@ namespace drafter {
                     }
                     nCurrent++;
                     Invoke(new Action(() => {
-                        screenshotViewer.Text = string.Format("Screenshot Viewer [Processing image ({0:d}%)...]", nCurrent * 100 / nTotal);
+                        screenshotViewer.SetProgress((double)nCurrent / nTotal);
                     }));
                 }
                 var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance).First();
                 Invoke(new Action(() => {
-                    screenshotViewer.Text = "Screenshot Viewer";
+                    screenshotViewer.SetProgress(Stage.Complete);
                     screenshotViewer.SetSearchResults(bans_picks.ToArray(), bgSearchResult);
                     c_bg.Text = bgSearchResult.Name;
                     screenshotViewer.Show();

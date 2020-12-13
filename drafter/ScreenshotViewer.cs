@@ -4,6 +4,10 @@ using System.Linq;
 using System.Windows.Forms;
 
 namespace drafter {
+    public enum Stage {
+        LoadingData, ProcessingImage, Complete
+    }
+
     public partial class ScreenshotViewer : Form {
         readonly MainForm mainForm;
         Image image;
@@ -62,6 +66,31 @@ namespace drafter {
             Activate();
         }
 
+        public void SetProgress(Stage stage) {
+            switch (stage) {
+                case Stage.LoadingData:
+                    prog.Style = ProgressBarStyle.Marquee;
+                    prog.Show();
+                    Text = "Screenshot Viewer [Loading data...]";
+                    break;
+                case Stage.ProcessingImage:
+                    prog.Style = ProgressBarStyle.Marquee;
+                    prog.Show();
+                    Text = "Screenshot Viewer [Processing image...]";
+                    break;
+                case Stage.Complete:
+                    prog.Hide();
+                    Text = "Screenshot Viewer";
+                    break;
+            }
+        }
+
+        public void SetProgress(double progress) {
+            prog.Style = ProgressBarStyle.Continuous;
+            prog.Value = (int)(progress * prog.Maximum);
+            Text = string.Format("Screenshot Viewer [Processing image ({0:d}%)...]", (int)(progress * 100));
+        }
+
         public void SetSearchResults(SearchResult[] searchResults, SearchResult bg = null, bool activateMainForm = true) {
             this.searchResults = searchResults;
             selection = new SearchResult[0];
@@ -77,7 +106,13 @@ namespace drafter {
         }
 
         private void ScreenshotViewer_Load(object sender, EventArgs e) {
+            ScreenshotViewer_Resize(sender, e);
+        }
 
+        private void ScreenshotViewer_Resize(object sender, EventArgs e) {
+            prog.Left = 0;
+            prog.Top = ClientRectangle.Height - prog.Height;
+            prog.Width = ClientRectangle.Width;
         }
 
         private void ScreenshotViewer_MouseClick(object sender, MouseEventArgs e) {
