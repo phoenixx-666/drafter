@@ -30,13 +30,24 @@ namespace drafter {
                 case Keys.F4:
                     debug = !debug;
                     Invalidate();
-                    break;
+                    return true;
                 case Keys.Delete:
                     if (selection.Any()) {
                         SetSearchResults(searchResults.Where(res => !selection.Contains(res)).ToArray(), activateMainForm: false);
                     } else
                         MessageBox.Show("No search result has been selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    break;
+                    return true;
+                case Keys.Control | Keys.Shift | Keys.C:
+                case Keys.Control | Keys.S:
+                case Keys.Control | Keys.Shift | Keys.V:
+                case Keys.Control | Keys.R:
+                case Keys.Control | Keys.W:
+                case Keys.Control | Keys.Space:
+                    mainForm.InvokeProcessCmdKey(ref msg, keyData);
+                    return true;
+                case Keys.Control | Keys.C:
+                    mainForm.InvokeProcessCmdKey(ref msg, Keys.Control | Keys.S);
+                    return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }

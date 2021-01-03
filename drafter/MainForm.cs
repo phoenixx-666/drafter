@@ -170,6 +170,11 @@ namespace drafter {
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
+        public void InvokeProcessCmdKey(ref Message msg, Keys keyData) {
+            Activate();
+            ProcessCmdKey(ref msg, keyData);
+        }
+
         void jumpBetweenTeams() {
             if (!(ActiveControl is ComboBox))
                 return;
