@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace drafter {
@@ -15,7 +8,7 @@ namespace drafter {
         }
 
         private void HeroAddDialog_Load(object sender, EventArgs e) {
-            cbAddHero.Items.AddRange(HeroList.Instance.Heroes);
+            cbAddHero.Items.AddRange(HeroList.Heroes);
         }
 
         private void CbAddHero_KeyPress(object sender, KeyEventArgs e) {

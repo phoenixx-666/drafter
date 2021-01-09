@@ -500,7 +500,7 @@ namespace drafter {
         void MainFormLoad(object sender, EventArgs e) {
 
             Controls.OfType<ComboBox>().Where(c => c != c_bg).ToList().ForEach(c => {
-                c.Items.AddRange(HeroList.Instance.Heroes);
+                c.Items.AddRange(HeroList.Heroes);
                 c.TextChanged += cboxChange;
             });
 

@@ -1,12 +1,4 @@
-﻿/*
- * Created by SharpDevelop.
- * User: nonexyst
- * Date: 10.02.2019
- * Time: 14:59
- * 
- * To change this template use Tools | Options | Coding | Edit Standard Headers.
- */
-using System;
+﻿using System;
 using System.Windows.Forms;
 
 namespace drafter
