@@ -513,8 +513,8 @@ namespace drafter {
             });
 
             c_bg.TextChanged += cboxChange;
-			ch_t1w.CheckedChanged += cboxChange;
-			ch_t2w.CheckedChanged += cboxChange;
+			ch_t1w.CheckedChanged += checkboxChange;
+			ch_t2w.CheckedChanged += checkboxChange;
 			update();
 		}
 
@@ -524,6 +524,23 @@ namespace drafter {
 
 			update();
 		}
+
+        void checkboxChange(object sender, EventArgs e) {
+            if (locked)
+                return;
+
+            var chbox = sender as CheckBox;
+            if (chbox != null && chbox.Checked) {
+                locked = true;
+                if (chbox == ch_t1w)
+                    ch_t2w.Checked = false;
+                else if (chbox == ch_t2w)
+                    ch_t1w.Checked = false;
+                locked = false;
+            }
+
+            update();
+        }
 
         void BSwapClick(object sender, EventArgs e) {
             swap();
