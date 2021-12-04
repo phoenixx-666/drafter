@@ -9,6 +9,8 @@ namespace drafter {
     }
 
     public partial class ScreenshotViewer : Form {
+        const int maxSearchResults = 16;
+
         readonly MainForm mainForm;
         Image image;
         SearchResult[] searchResults = new SearchResult[0];
@@ -17,6 +19,7 @@ namespace drafter {
         SearchResult[] t2picks = new SearchResult[0];
         SearchResult[] selection = new SearchResult[0];
         SearchResult bg = null;
+        ToolStripMenuItem[] menuSelectHeroItem = new ToolStripMenuItem[0];
         bool debug = false;
 
         public ScreenshotViewer(MainForm mainForm) {
@@ -24,6 +27,8 @@ namespace drafter {
             this.mainForm = mainForm;
             InitializeComponent();
         }
+
+        public bool SearchForBattleground => menuSearchBG.Checked;
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData) {
             switch (keyData) {
@@ -33,7 +38,7 @@ namespace drafter {
                     return true;
                 case Keys.Delete:
                     if (selection.Any()) {
-                        SetSearchResults(searchResults.Where(res => !selection.Contains(res)).ToArray(), activateMainForm: false);
+                        SetSearchResults(searchResults.Where(res => !selection.Contains(res)).ToArray(), bg, false);
                     } else
                         MessageBox.Show("No search result has been selected.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return true;
@@ -73,6 +78,7 @@ namespace drafter {
             searchResults = new SearchResult[0];
             selection = new SearchResult[0];
             bg = null;
+
             UpdateBansPicks();
             Activate();
         }
@@ -102,11 +108,10 @@ namespace drafter {
             Text = string.Format("Screenshot Viewer [Processing image ({0:d}%)...]", (int)(progress * 100));
         }
 
-        public void SetSearchResults(SearchResult[] searchResults, SearchResult bg = null, bool activateMainForm = true) {
+        public void SetSearchResults(SearchResult[] searchResults, SearchResult bg, bool activateMainForm = true) {
             this.searchResults = searchResults;
             selection = new SearchResult[0];
-            if (bg != null)
-                this.bg = bg;
+            this.bg = bg;
             UpdateBansPicks();
             mainForm.SetBansPicks(
                 bans.Select(t => t.Name).ToArray(),
@@ -141,7 +146,7 @@ namespace drafter {
                     Invalidate();
                 }
             } else if (e.Button == MouseButtons.Right) {
-                if (searchResults.Length >= 16) {
+                if (searchResults.Length >= maxSearchResults) {
                     MessageBox.Show("Cannot add more custom search results", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
@@ -152,7 +157,7 @@ namespace drafter {
                             location.X - rectSide, location.Y - rectSide,
                             location.X + rectSide, location.Y + rectSide);
                         var result = new SearchResult(dlg.HeroChoice, rect, location);
-                        SetSearchResults(searchResults.Append(result).OrderBy(t => t.Location.Y).ToArray(), activateMainForm: false);
+                        SetSearchResults(searchResults.Append(result).OrderBy(t => t.Location.Y).ToArray(), bg, false);
                     }
                 }
             }

@@ -268,8 +268,8 @@ namespace drafter {
         }
 
         void update() {
-            string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
-                              "|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
+            const string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
+                                    "|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
             string winner = "";
             if (ch_t1w.Checked && !ch_t2w.Checked)
                 winner = "1";
@@ -450,29 +450,40 @@ namespace drafter {
                 var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
 
                 var bgSearchResults = new List<SearchResult>();
-                foreach (var kvp in bgnameDescriptors) {
-                    using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
-                        matcher.KnnMatch(kvp.Value, des, vMatches, 2);
-                        const float maxdist = 0.7f;
-                        var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
-                        if (matches.Any()) {
-                            bgSearchResults.Add(new SearchResult(kvp.Key, matches, kp));
+                if ((bool)Invoke(new Func<object>(() => (object)screenshotViewer.SearchForBattleground))) {
+                    foreach (var kvp in bgnameDescriptors) {
+                        using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
+                            matcher.KnnMatch(kvp.Value, des, vMatches, 2);
+                            const float maxdist = 0.7f;
+                            var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
+                            if (matches.Any()) {
+                                bgSearchResults.Add(new SearchResult(kvp.Key, matches, kp));
+                            }
                         }
+                        nCurrent++;
+                        Invoke(new Action(() => {
+                            screenshotViewer.SetProgress((double)nCurrent / nTotal);
+                        }));
                     }
-                    nCurrent++;
-                    Invoke(new Action(() => {
-                        screenshotViewer.SetProgress((double)nCurrent / nTotal);
-                    }));
                 }
-                var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance).First();
+                var bgSearchResult = bgSearchResults.Any() ? bgSearchResults.OrderBy(t => -t.Distance).First() : null;
                 Invoke(new Action(() => {
                     screenshotViewer.SetProgress(Stage.Complete);
                     screenshotViewer.SetSearchResults(bans_picks.ToArray(), bgSearchResult);
-                    c_bg.Text = bgSearchResult.Name;
+                    if (bgSearchResult != null)
+                        c_bg.Text = bgSearchResult.Name;
                     screenshotViewer.Show();
                     Focus();
                 }));
             }
+        }
+
+        private void Worker_Completed(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e) {
+            if (e.Error == null)
+                return;
+
+            IWin32Window owner = screenshotViewer != null ? (IWin32Window)screenshotViewer : this;
+            MessageBox.Show(owner, "There was an error processing image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
 
         public void SetBansPicks(string[] bans, string[] t1picks, string[] t2picks) {
