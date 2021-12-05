@@ -132,11 +132,11 @@ namespace drafter {
         }
 
         private void ScreenshotViewer_MouseClick(object sender, MouseEventArgs e) {
-            var ratio = Math.Min((float)ClientRectangle.Width / image.Width, (float)ClientRectangle.Height / image.Height);
+            var ratio = Math.Min((float)ClientRectangle.Width / image.Width, (float)(ClientRectangle.Height - menu.Height) / image.Height);
             var visibleSize = new SizeF(image.Width * ratio, image.Height * ratio);
-            var offset = new PointF(ClientRectangle.Width / 2 - visibleSize.Width / 2, ClientRectangle.Height / 2 - visibleSize.Height / 2);
+            var offset = new PointF(ClientRectangle.Width / 2 - visibleSize.Width / 2, (ClientRectangle.Height - menu.Height) / 2 - visibleSize.Height / 2);
 
-            var location = new PointF(e.X / ratio - offset.X / ratio, e.Y / ratio - offset.Y / ratio);
+            var location = new PointF(e.X / ratio - offset.X / ratio, (e.Y - menu.Height) / ratio - offset.Y / ratio);
             if (location.X < 0 || location.X >= image.Width || location.Y < 0 || location.Y >= image.Height)
                 return;
             if (e.Button == MouseButtons.Left) {
@@ -167,7 +167,7 @@ namespace drafter {
             var image = (Image)this.image.Clone();
             var ratio = Math.Min((float)e.ClipRectangle.Width / image.Width, (float)e.ClipRectangle.Height / image.Height);
             var dstSize = new SizeF(image.Width * ratio, image.Height * ratio);
-            var offset = new PointF(e.ClipRectangle.Width / 2 - dstSize.Width / 2, e.ClipRectangle.Height / 2 - dstSize.Height / 2);
+            var offset = new PointF(e.ClipRectangle.Width / 2 - dstSize.Width / 2, menu.Height + e.ClipRectangle.Height / 2 - dstSize.Height / 2);
 
             using (var g = Graphics.FromImage(image)) {
                 float radius = 0.025f * image.Width;
