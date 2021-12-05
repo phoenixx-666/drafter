@@ -19,7 +19,6 @@ namespace drafter {
         SearchResult[] t2picks = new SearchResult[0];
         SearchResult[] selection = new SearchResult[0];
         SearchResult bg = null;
-        ToolStripMenuItem[] menuSelectHeroItem = new ToolStripMenuItem[0];
         bool debug = false;
 
         public ScreenshotViewer(MainForm mainForm) {
@@ -70,6 +69,21 @@ namespace drafter {
             Invalidate();
         }
 
+        void UpdateMenu() {
+            menuSelectHero.DropDownItems.Clear();
+            int index = 1;
+            foreach (var result in searchResults.OrderBy(result => result.Name)) {
+                string text = string.Format("{0:d}: {1:s}", index, result.Name == string.Empty ? "<wasted ban>" : result.Name);
+                var item = menuSelectHero.DropDownItems.Add(text);
+                item.Click += new EventHandler((object sender, EventArgs e) => {
+                    selection = new SearchResult[] { result };
+                    Invalidate();
+                });
+                index++;
+            }
+            menuSelectHero.Enabled = searchResults.Any();
+        }
+
         public void SetImage(Image image) {
             Text = "Screenshot Viewer";
             if (this.image != null)
@@ -80,6 +94,7 @@ namespace drafter {
             bg = null;
 
             UpdateBansPicks();
+            UpdateMenu();
             Activate();
         }
 
@@ -113,6 +128,7 @@ namespace drafter {
             selection = new SearchResult[0];
             this.bg = bg;
             UpdateBansPicks();
+            UpdateMenu();
             mainForm.SetBansPicks(
                 bans.Select(t => t.Name).ToArray(),
                 t1picks.Select(t => t.Name).ToArray(),
