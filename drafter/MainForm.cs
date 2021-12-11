@@ -356,7 +356,7 @@ namespace drafter {
         }
 
         private void Worker_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e) {
-            Image image = (Image)e.Argument;
+            var image = (Image)e.Argument;
             var minSize = new Size(3840, 2160);
             Size newSize;
             if (image.Width < minSize.Width || image.Height < minSize.Height) {
@@ -424,10 +424,13 @@ namespace drafter {
                 sift.DetectAndCompute(cvImage, null, kp, des, false);
                 cvImage.Dispose();
 
-                var searchResults = new List<SearchResult>();
                 Invoke(new Action(() => {
                     screenshotViewer.SetProgress(0.0);
                 }));
+
+                var searchResults = new List<SearchResult>();
+                var bgSearchResults = new List<SearchResult>();
+
                 foreach (var kvp in heroDescriptors) {
                     using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
                         matcher.KnnMatch(kvp.Value, des, vMatches, 2);
@@ -441,15 +444,6 @@ namespace drafter {
                         screenshotViewer.SetProgress((double)nCurrent / nTotal);
                     }));
                 }
-                searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
-                searchResults.RemoveAll(t => searchResults.Take(searchResults.IndexOf(t)).Select(u => u.Name).Contains(t.Name));
-                var bans_picks = searchResults.Take(16).OrderBy(t => t.Location.Y).ToList();
-                var bans = bans_picks.Take(6).OrderBy(t => t.Location.X).ToList();
-                var picks = bans_picks.Skip(6).OrderBy(t => t.Location.X).ToList();
-                var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
-                var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
-
-                var bgSearchResults = new List<SearchResult>();
                 if ((bool)Invoke(new Func<object>(() => (object)screenshotViewer.SearchForBattleground))) {
                     foreach (var kvp in bgnameDescriptors) {
                         using (var vMatches = new Emgu.CV.Util.VectorOfVectorOfDMatch()) {
@@ -466,6 +460,15 @@ namespace drafter {
                         }));
                     }
                 }
+
+                searchResults.Sort((a, b) => -a.Distance.CompareTo(b.Distance));
+                searchResults.RemoveAll(t => searchResults.Take(searchResults.IndexOf(t)).Select(u => u.Name).Contains(t.Name));
+                var bans_picks = searchResults.Take(16).OrderBy(t => t.Location.Y).ToList();
+                var bans = bans_picks.Take(6).OrderBy(t => t.Location.X).ToList();
+                var picks = bans_picks.Skip(6).OrderBy(t => t.Location.X).ToList();
+                var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
+                var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
+
                 var bgSearchResult = bgSearchResults.Any() ? bgSearchResults.OrderBy(t => -t.Distance).First() : null;
                 Invoke(new Action(() => {
                     screenshotViewer.SetProgress(Stage.Complete);
