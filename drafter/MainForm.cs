@@ -414,7 +414,7 @@ namespace drafter {
                 bgnameDescriptors = loadDescriptors("bgnames.zip");
             }
 
-            int nTotal = heroDescriptors.Count + bgnameDescriptors.Count;
+            int nTotal = heroDescriptors.Values.Concat(bgnameDescriptors.Values).Select(desc => desc.Rows).Sum();
             int nCurrent = 0;
             using (var kp = new Emgu.CV.Util.VectorOfKeyPoint())
             using (var des = new Emgu.CV.Mat()) {
@@ -439,7 +439,7 @@ namespace drafter {
                         if (matches.Any())
                             searchResults.Add(new SearchResult(kvp.Key, matches, kp));
                     }
-                    nCurrent++;
+                    nCurrent += kvp.Value.Rows;
                     Invoke(new Action(() => {
                         screenshotViewer.SetProgress((double)nCurrent / nTotal);
                     }));
@@ -454,7 +454,7 @@ namespace drafter {
                                 bgSearchResults.Add(new SearchResult(kvp.Key, matches, kp));
                             }
                         }
-                        nCurrent++;
+                        nCurrent += kvp.Value.Rows;
                         Invoke(new Action(() => {
                             screenshotViewer.SetProgress((double)nCurrent / nTotal);
                         }));
