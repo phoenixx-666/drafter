@@ -8,6 +8,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Microsoft.WindowsAPICodePack.Taskbar;
 
 namespace drafter {
     public partial class MainForm : Form {
@@ -32,6 +33,9 @@ namespace drafter {
 
             var assembly = System.Reflection.Assembly.GetExecutingAssembly();
             this.Icon = new Icon(assembly.GetManifestResourceStream("drafter.drafter.ico"));
+#if DEBUG
+            this.Text = "drafter [Debug]";
+#endif
 
             teamAPicks = new Control[] {
                 c_t1b1,
@@ -364,6 +368,7 @@ namespace drafter {
                 newSize = new Size((int)(ratio * image.Width), (int)(ratio * image.Height));
             } else
                 newSize = image.Size;
+            var rectSide = Math.Min(newSize.Width, newSize.Height) / 15.0f;
             var newRect = new Rectangle(Point.Empty, newSize);
             Emgu.CV.Image<Emgu.CV.Structure.Bgr, byte> cvImage;
             using (var bitmap = new Bitmap(newSize.Width, newSize.Height, PixelFormat.Format24bppRgb)) {
@@ -437,11 +442,12 @@ namespace drafter {
                         const float maxdist = 0.7f;
                         var matches = vMatches.ToArrayOfArray().Where(m => m[0].Distance < maxdist * m[1].Distance).ToList();
                         if (matches.Any())
-                            searchResults.Add(new SearchResult(kvp.Key, matches, kp));
+                            searchResults.Add(new SearchResult(kvp.Key, matches, kp, rectSide));
                     }
                     nCurrent += kvp.Value.Rows;
                     Invoke(new Action(() => {
                         screenshotViewer.SetProgress((double)nCurrent / nTotal);
+                        TaskbarManager.Instance.SetProgressValue(nCurrent * 1000 / nTotal, 1000, this.Handle);
                     }));
                 }
                 if ((bool)Invoke(new Func<object>(() => (object)screenshotViewer.SearchForBattleground))) {
@@ -457,6 +463,7 @@ namespace drafter {
                         nCurrent += kvp.Value.Rows;
                         Invoke(new Action(() => {
                             screenshotViewer.SetProgress((double)nCurrent / nTotal);
+                            TaskbarManager.Instance.SetProgressValue(nCurrent * 1000 / nTotal, 1000, this.Handle);
                         }));
                     }
                 }
@@ -469,9 +476,10 @@ namespace drafter {
                 var t1picks = picks.Take(5).OrderBy(t => t.Location.Y).ToList();
                 var t2picks = picks.Skip(5).OrderBy(t => t.Location.Y).ToList();
 
-                var bgSearchResult = bgSearchResults.Any() ? bgSearchResults.OrderBy(t => -t.Distance).First() : null;
+                var bgSearchResult = bgSearchResults.OrderBy(t => -t.Distance).FirstOrDefault();
                 Invoke(new Action(() => {
                     screenshotViewer.SetProgress(Stage.Complete);
+                    TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress, this.Handle);
                     screenshotViewer.SetSearchResults(bans_picks.ToArray(), bgSearchResult);
                     if (bgSearchResult != null)
                         c_bg.Text = bgSearchResult.Name;
@@ -485,8 +493,13 @@ namespace drafter {
             if (e.Error == null)
                 return;
 
+            TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.Error, this.Handle);
+
             IWin32Window owner = screenshotViewer != null ? (IWin32Window)screenshotViewer : this;
             MessageBox.Show(owner, "There was an error processing image.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            if (screenshotViewer != null)
+                screenshotViewer.SetProgress(Stage.Complete);
+            TaskbarManager.Instance.SetProgressState(TaskbarProgressBarState.NoProgress, this.Handle);
         }
 
         public void SetBansPicks(string[] bans, string[] t1picks, string[] t2picks) {

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Drawing;
+using System.Linq;
+using Emgu.CV.Structure;
 
 namespace drafter {
     public class SearchResult {
@@ -12,7 +13,7 @@ namespace drafter {
             Location = location;
         }
 
-        public SearchResult(string name, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp) {
+        public SearchResult(string name, List<Emgu.CV.Structure.MDMatch[]> matches, Emgu.CV.Util.VectorOfKeyPoint kp, float minSide = 0.0f) {
             Name = name.Split('_')[0];
             Matches = matches.Where(m => m[0].Distance <= matches.Select(m0 => (double)m0[0].Distance).Median()).ToList();
             var nmatches = matches.Count;
@@ -35,12 +36,16 @@ namespace drafter {
             var xs = mp.Select(pt => pt.X).OrderBy(n => n).ToList();
             var ys = mp.Select(pt => pt.Y).OrderBy(n => n).ToList();
 
-            var (minx, maxx) = (xs.First(), xs.Last());
-            var (miny, maxy) = (ys.First(), ys.Last());
+            var (w, h) = (xs.Last() - xs.First(), ys.Last() - ys.First());
+            var (cx, cy) = (xs.First() + w / 2, ys.First() + h / 2);
+            (w, h) = (Math.Max(w, minSide), Math.Max(h, minSide));
+#if DEBUG
+            System.Diagnostics.Debug.WriteLine("{0:s}: {1:f}, {2:f}, {3:f}", name, minSide, w, h);
+#endif
 
             MatchPoints = mp;
-            Rect = new RectangleF(minx, miny, maxx - minx, maxy - miny);
-            Location = new PointF(Rect.X + Rect.Width / 2, Rect.Y + Rect.Height / 2);
+            Rect = new RectangleF(cx - w / 2, cy - h / 2, w, h);
+            Location = new PointF(cx, cy);
             Distance = matches.Select(m => (double)1 / m[0].Distance).Sum();
             /*if (HeroName == "chromie")
                 Distance *= 2;

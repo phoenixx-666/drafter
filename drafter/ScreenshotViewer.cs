@@ -9,6 +9,8 @@ namespace drafter {
     }
 
     public partial class ScreenshotViewer : Form {
+        //const string baseTitle = "ScreenshotViewer";
+        //readonly string annotatedTitle = string.Format("{0:s} [{{0:s}}]", baseTitle);
         const int maxSearchResults = 16;
 
         readonly MainForm mainForm;
