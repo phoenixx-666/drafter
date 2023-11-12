@@ -8,7 +8,14 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using Emgu.CV;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
+
+using Image = System.Drawing.Image;
+using Message = System.Windows.Forms.Message;
 
 namespace drafter {
     public partial class MainForm : Form {
@@ -19,7 +26,7 @@ namespace drafter {
         readonly Dictionary<object, ComboBox> initialCBoxes;
         ComboBox initialCBox;
         ScreenshotViewer screenshotViewer;
-        Regex cleanRe = null, parserRe = null;
+        Regex cleanRe = null, commentRe = null, parserRe = null;
         Timer timer = null;
         int message_cycles;
         int message_duration;
@@ -223,8 +230,15 @@ namespace drafter {
             if (text.Length == 0)
                 return;
 
+            if (commentRe == null)
+                commentRe = new Regex("<!\\-\\-((?!\\-\\->).)*\\-\\->");
+
+            text = commentRe.Replace(text, "");
+            if (text.Length == 0)
+                return;
+
             if (parserRe == null)
-                parserRe = new Regex("(t[12](b[1-3]|h[1-5])|battleground|win)");
+                parserRe = new Regex("(t[12](b[1-3]|h[1-5])|map|win)");
 
             Dictionary<string, string> dict = new Dictionary<string, string>();
             foreach (string chunk in text.Split('|')) {
@@ -249,10 +263,10 @@ namespace drafter {
                 if (dict.ContainsKey(key))
                     c.Text = dict[key];
             }
-            if (dict.ContainsKey("battleground"))
-                c_bg.Text = dict["battleground"];
-            if (dict.ContainsKey("win")) {
-                string winner = dict["win"];
+            if (dict.ContainsKey("map"))
+                c_bg.Text = dict["map"];
+            if (dict.ContainsKey("winner")) {
+                string winner = dict["winner"];
                 ch_t1w.Checked = winner == "1";
                 ch_t2w.Checked = winner == "2";
             }
@@ -272,8 +286,14 @@ namespace drafter {
         }
 
         void update() {
-            const string template = "|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4} |t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
-                                    "|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12} |t2b1={13} |t2b2={14} |t2b3={15}\r\n";
+            const string template = "\t\t|team1side=blue |team2side=red |winner={16}\r\n" +
+                                    "\t\t|vod= |comment=<small> Match Duration: </small>\r\n" +
+                                    "\t\t<!-- Hero picks -->\r\n" +
+                                    "\t\t|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4}\r\n" +
+                                    "\t\t|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12}\r\n" +
+                                    "\t\t<!-- Hero bans -->\r\n" +
+                                    "\t\t|t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
+                                    "\t\t|t2b1={13} |t2b2={14} |t2b3={15}\r\n";
             string winner = "";
             if (ch_t1w.Checked && !ch_t2w.Checked)
                 winner = "1";
@@ -283,9 +303,10 @@ namespace drafter {
                                           c_t1h1.Text, c_t1h2.Text, c_t1h3.Text, c_t1h4.Text, c_t1h5.Text,
                                           c_t1b1.Text, c_t1b2.Text, c_t1b3.Text,
                                           c_t2h1.Text, c_t2h2.Text, c_t2h3.Text, c_t2h4.Text, c_t2h5.Text,
-                                          c_t2b1.Text, c_t2b2.Text, c_t2b3.Text);
-            if (c_bg.Text != "" || winner != "")
-                result += string.Format("|battleground={0} |win={1}\r\n", c_bg.Text, winner);
+                                          c_t2b1.Text, c_t2b2.Text, c_t2b3.Text,
+                                          winner);
+            if (c_bg.Text != "")
+                result = string.Format("map={0}\r\n", c_bg.Text) + result;
             tResult.Text = result;
         }
 
