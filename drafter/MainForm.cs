@@ -10,9 +10,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Emgu.CV;
 using Microsoft.WindowsAPICodePack.Taskbar;
-using static Microsoft.WindowsAPICodePack.Shell.PropertySystem.SystemProperties.System;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 using Image = System.Drawing.Image;
 using Message = System.Windows.Forms.Message;
