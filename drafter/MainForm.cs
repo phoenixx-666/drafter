@@ -290,7 +290,7 @@ namespace drafter {
                                     "\t\t|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12}\r\n" +
                                     "\t\t<!-- Hero bans -->\r\n" +
                                     "\t\t|t1b1={5} |t1b2={6} |t1b3={7}\r\n" +
-                                    "\t\t|t2b1={13} |t2b2={14} |t2b3={15}\r\n";
+                                    "\t\t|t2b1={13} |t2b2={14} |t2b3={15}";
             string winner = "";
             if (ch_t1w.Checked && !ch_t2w.Checked)
                 winner = "1";

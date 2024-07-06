@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("drafter")]
-[assembly: AssemblyCopyright("Copyright 2019-2023")]
+[assembly: AssemblyCopyright("Copyright 2019-2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
