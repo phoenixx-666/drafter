@@ -284,7 +284,7 @@ namespace drafter {
 
         void update() {
             const string template = "\t\t|team1side=blue |team2side=red |winner={16}\r\n" +
-                                    "\t\t|vod= |comment=<small> Match Duration: </small>\r\n" +
+                                    "\t\t|vod= |length=\r\n" +
                                     "\t\t<!-- Hero picks -->\r\n" +
                                     "\t\t|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4}\r\n" +
                                     "\t\t|t2h1={8} |t2h2={9} |t2h3={10} |t2h4={11} |t2h5={12}\r\n" +
