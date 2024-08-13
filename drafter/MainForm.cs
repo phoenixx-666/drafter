@@ -235,7 +235,7 @@ namespace drafter {
                 return;
 
             if (parserRe == null)
-                parserRe = new Regex("(t[12](b[1-3]|h[1-5])|map|win)");
+                parserRe = new Regex("^(t[12](b[1-3]|h[1-5])|map|winner|team[12]side)$");
 
             Dictionary<string, string> dict = new Dictionary<string, string>();
             foreach (string chunk in text.Split('|')) {
@@ -267,6 +267,17 @@ namespace drafter {
                 ch_t1w.Checked = winner == "1";
                 ch_t2w.Checked = winner == "2";
             }
+            if (dict.ContainsKey("team1side")) {
+                if (dict["team1side"] == "blue")
+                    resetColors();
+                else
+                    reverseColors();
+            } else if (dict.ContainsKey("team2side")) {
+                if (dict["team2side"] == "red")
+                    resetColors();
+                else
+                    reverseColors();
+            }
             locked = false;
             update();
         }
@@ -283,7 +294,7 @@ namespace drafter {
         }
 
         void update() {
-            const string template = "\t\t|team1side=blue |team2side=red |winner={16}\r\n" +
+            const string template = "\t\t|team1side={16} |team2side={17} |winner={18}\r\n" +
                                     "\t\t|vod= |length=\r\n" +
                                     "\t\t<!-- Hero picks -->\r\n" +
                                     "\t\t|t1h1={0} |t1h2={1} |t1h3={2} |t1h4={3} |t1h5={4}\r\n" +
@@ -301,7 +312,7 @@ namespace drafter {
                                           c_t1b1.Text, c_t1b2.Text, c_t1b3.Text,
                                           c_t2h1.Text, c_t2h2.Text, c_t2h3.Text, c_t2h4.Text, c_t2h5.Text,
                                           c_t2b1.Text, c_t2b2.Text, c_t2b3.Text,
-                                          winner);
+                                          t_s1.Text, t_s2.Text, winner);
             if (c_bg.Text != "")
                 result = string.Format("map={0}\r\n", c_bg.Text) + result;
             tResult.Text = result;
@@ -327,8 +338,37 @@ namespace drafter {
                 ch_t1w.Checked = !ch_t1w.Checked;
                 ch_t2w.Checked = !ch_t2w.Checked;
             }
+            swapColors();
             locked = false;
             update();
+        }
+
+        void swapColors() {
+            if (t_s1.Text == "blue") {
+                reverseColors();
+            } else {
+                resetColors();
+            }
+        }
+
+        void reverseColors() {
+            t_s1.Text = "red";
+            t_s1.ForeColor = Color.Red;
+            t_s2.Text = "blue";
+            t_s2.ForeColor = Color.Blue;
+
+            if (!locked)
+                update();
+        }
+
+        void resetColors() {
+            t_s1.Text = "blue";
+            t_s1.ForeColor = Color.Blue;
+            t_s2.Text = "red";
+            t_s2.ForeColor = Color.Red;
+
+            if (!locked)
+                update();
         }
 
         void clear() {
@@ -337,6 +377,7 @@ namespace drafter {
                 c.Text = "";
             }
             ch_t1w.Checked = ch_t2w.Checked = false;
+            resetColors();
             locked = false;
             update();
             initialCBox.Focus();
@@ -538,6 +579,7 @@ namespace drafter {
             c_t2h3.Text = t2picks.ElementAtOrDefault(2);
             c_t2h4.Text = t2picks.ElementAtOrDefault(3);
             c_t2h5.Text = t2picks.ElementAtOrDefault(4);
+            resetColors();
             locked = false;
             update();
         }
@@ -594,6 +636,10 @@ namespace drafter {
 		void BCopyClick(object sender, EventArgs e) {
 			copy(true);
 		}
+
+        void BSwapColorsCluck(object sender, EventArgs e) {
+            swapColors();
+        }
 
         void BPaste_Click(object sender, EventArgs e) {
             paste();
